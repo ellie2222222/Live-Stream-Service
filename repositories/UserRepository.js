@@ -1,10 +1,11 @@
 const User = require('../models/UserModel');
+
 class UserRepository {
     // Create a new user
     async createUser(data, session) {
         try {
             const user = await User.create([data], { session });
-            return user;
+            return user[0];
         } catch (error) {
             throw new Error(`Error creating user: ${error.message}`);
         }
@@ -14,38 +15,70 @@ class UserRepository {
     async updateUser(userId, updateData, session) {
         try {
             const user = await User.findByIdAndUpdate(userId, updateData, { new: true, session });
+            
+            if (!user) {
+                throw new Error(`User with ID ${userId} not found`);
+            }
+
             return user;
         } catch (error) {
             throw new Error(`Error updating user: ${error.message}`);
         }
     }
 
-    // Delete a user by ID
-    async deleteUser(userId, session) {
+    // Deactivate a user by ID
+    async deactivateUser(userId, session) {
         try {
-            const user = await User.findByIdAndDelete(userId, { session });
+            const user = await User.findByIdAndUpdate(
+                userId,
+                { $set: { isActive: false } },
+                { new: true, session }
+            );
+
+            if (!user) {
+                throw new Error(`User with ID ${userId} not found`);
+            }
+
             return user;
         } catch (error) {
-            throw new Error(`Error deleting user: ${error.message}`);
+            throw new Error(`Error deactivating user: ${error.message}`);
         }
     }
 
     // Find a user by ID
-    async findUserById(userId, session) {
+    async findAllActiveUsers() {
         try {
-            const user = await User.findById(userId, null, { session });
+            const user = await User.find({ isActive: true });
+
+            return user;
+        } catch (error) {
+            throw new Error(`Error finding all active users: ${error.message}`);
+        }
+    }
+
+    // Find a user by ID
+    async findUserById(userId) {
+        try {
+            const user = await User.findOne({ _id: userId, isActive: true });
+
+            if (!user) {
+                throw new Error(`User with ID ${userId} not found or has been deactivated`);
+            }
+
             return user;
         } catch (error) {
             throw new Error(`Error finding user: ${error.message}`);
         }
     }
 
+    // Find a user by email
     async findUserByEmail(email) {
         try {
             const user = await User.findOne({ email });
+            
             return user;
         } catch (error) {
-            throw new Error(`Error finding user by email: ' ${error.message}`);
+            throw new Error(`Error finding user: ${error.message}`);
         }
     }
 }

@@ -13,6 +13,7 @@ class BaseDatabaseTransaction {
     async connect() {
         try {
             await mongoose.connect(URI, { dbName: DBName });
+            console.log(`Successfully connected to the database ${DBName}`);
         } catch (error) {
             throw new Error(error.message);
         }
