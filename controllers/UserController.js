@@ -1,4 +1,4 @@
-const { findUser, updateUserProfile, deactivateUser } = require("../services/UserService");
+const { findUser, updateUserProfile, deactivateUser, findAllUsers } = require("../services/UserService");
 
 class UserController {
     // get a user
@@ -7,6 +7,17 @@ class UserController {
 
         try {
             const user = await findUser(userId);
+
+            res.status(200).json({ data: user, message: "Success" });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    };
+
+    // get all users
+    async getUsers(req, res) {
+        try {
+            const user = await findAllUsers();
 
             res.status(200).json({ data: user, message: "Success" });
         } catch (error) {

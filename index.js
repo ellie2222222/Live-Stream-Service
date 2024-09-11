@@ -9,7 +9,7 @@ const userRoutes = require('./routes.js/UserRoute');
 const app = express();
 
 app.use(cors({
-    origin: '5173',
+    origin: process.env.WEB_PORT || '5173',
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }))

@@ -1,12 +1,16 @@
 const express = require('express')
 const UserController = require('../controllers/UserController');
+const AuthMiddleware = require('../middlewares/AuthMiddleware');
 const userController = new UserController();
-const authRoutes = express.Router();
 
-authRoutes.patch('/users/:userId/profile-update', userController.updateUser);
+const userRoutes = express.Router();
 
-authRoutes.get('/users/:userId', userController.getUser);
+userRoutes.get('/users/', AuthMiddleware, userController.getUsers);
 
-authRoutes.delete('/users/:userId', userController.deleteUser);
+userRoutes.patch('/users/:userId', AuthMiddleware, userController.updateUser);
 
-module.exports = authRoutes;
+userRoutes.get('/users/:userId', AuthMiddleware, userController.getUser);
+
+userRoutes.delete('/users/:userId', AuthMiddleware, userController.deleteUser);
+
+module.exports = userRoutes;

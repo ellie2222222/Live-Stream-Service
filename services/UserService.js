@@ -35,7 +35,7 @@ const signup = async (username, email, password) => {
             username,
             email,
             password: hashedPassword
-        }, session);
+        });
 
         return user;
     } catch (error) {
@@ -53,6 +53,9 @@ const login = async (email, password) => {
         }
 
         const user = await connection.userRepository.findUserByEmail(email);
+        if (user.isActive === false) {
+            throw new Error('User account is deactivated! Cannot login')
+        }
         if (!user) {
             throw new Error('User not found');
         }
@@ -77,6 +80,18 @@ const findUser = async (userId) => {
         }
 
         const user = await connection.userRepository.findUserById(userId);
+
+        return user;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+}
+
+const findAllUsers = async (userId) => {
+    try {
+        const connection = new DatabaseTransaction();
+
+        const user = await connection.userRepository.findAllActiveUsers();
 
         return user;
     } catch (error) {
@@ -120,6 +135,7 @@ module.exports = {
     login,
     signup,
     findUser,
+    findAllUsers,
     updateUserProfile,
     deactivateUser,
 };
