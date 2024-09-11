@@ -5,7 +5,7 @@ class UserRepository {
     async createUser(data, session) {
         try {
             const user = await User.create([data], { session });
-            return user;
+            return user[0];
         } catch (error) {
             throw new Error(`Error creating user: ${error.message}`);
         }
