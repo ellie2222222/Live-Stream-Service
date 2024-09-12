@@ -16,11 +16,7 @@ class AuthController {
     try {
       const user = await login(email, password);
 
-      const accessToken = createAccessToken(
-        user._id,
-        user.email,
-        user.username
-      );
+            const accessToken = createAccessToken(user._id);
 
       res.status(200).json({ accessToken, message: "Login success" });
     } catch (error) {

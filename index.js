@@ -1,9 +1,11 @@
 require("dotenv").config();
 
-const express = require("express");
-const cors = require("cors");
-const authRoutes = require("./routes.js/AuthRoute");
-const userRoutes = require("./routes.js/UserRoute");
+const express = require('express')
+const cors = require('cors');
+const authRoutes = require('./routes.js/AuthRoute');
+const userRoutes = require('./routes.js/UserRoute');
+const streamRoutes = require('./routes.js/StreamRoute');
+const messageRoutes = require('./routes.js/MessageRoute');
 
 //application
 const app = express();
@@ -21,8 +23,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // router
-app.use("/api", authRoutes);
-app.use("/api", userRoutes);
+app.use('/api', authRoutes);
+app.use('/api', userRoutes);
+app.use('/api', streamRoutes);
+app.use('/api', messageRoutes);
 
 // log api requests
 app.use((req, res, next) => {

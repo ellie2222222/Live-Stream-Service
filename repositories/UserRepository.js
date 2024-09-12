@@ -5,7 +5,7 @@ class UserRepository {
     async createUser(data, session) {
         try {
             const user = await User.create([data], { session });
-            return user;
+            return user[0];
         } catch (error) {
             throw new Error(`Error creating user: ${error.message}`);
         }
@@ -14,7 +14,7 @@ class UserRepository {
     // Update a user by ID
     async updateUser(userId, updateData, session) {
         try {
-            const user = await User.findByIdAndUpdate(userId, updateData, { new: true, session });
+            const user = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true, session });
             
             if (!user) {
                 throw new Error(`User with ID ${userId} not found`);
@@ -32,7 +32,7 @@ class UserRepository {
             const user = await User.findByIdAndUpdate(
                 userId,
                 { $set: { isActive: false } },
-                { new: true, session }
+                { new: true, runValidators: true, session }
             );
 
             if (!user) {
