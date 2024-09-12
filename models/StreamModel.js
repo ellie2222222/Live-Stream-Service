@@ -6,26 +6,30 @@ const streamSchema = new Schema( {
     title: {
         type: String,
         required: true,
+        minlength: [1, 'Title must be at least 1 character long'],
+        maxlength: [100, 'Title cannot exceed 100 characters'],
         default: '',
     },
     thumbnailUrl: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
     },
-    password: {
-        type: String,
-        required: true
+    userId: {
+        type: mongoose.Types.ObjectId,
+        ref: 'User',
+        required: true,
     },
-    bio: {
-        type: String,
-        default: '',
+    endedAt: {
+        type: Date,
+        default: null,
     },
-    avatarUrl: {
-        type: String,
-        default: '',
+    currentViewCount: {
+        type: Number,
+        default: 0,
+        required: true,
     },
-    isDelete: {
+    isDeleted: {
         type: Boolean,
         required: true,
         default: false,
