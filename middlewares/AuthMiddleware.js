@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const AuthMiddleware = async (req, res, next) => {
     const { authorization } = req.headers;
 
+    console.log('Authorization Header:', authorization);
+
     if (!authorization) {
         return res.status(401).json({ error: 'Authorization token required' });
     }
@@ -12,11 +14,12 @@ const AuthMiddleware = async (req, res, next) => {
 
     try {
         const { _id } = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-
+        console.log('User ID from token:', _id);
         if (!mongoose.Types.ObjectId.isValid(_id)) {
             return res.status(400).json({ error: 'Invalid user ID' });
         }
 
+        req.userId = _id;
         next();
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
@@ -27,5 +30,6 @@ const AuthMiddleware = async (req, res, next) => {
         res.status(500).json({ error: error.message, errorType: 'Other' });
     }
 };
+
 
 module.exports = AuthMiddleware;
