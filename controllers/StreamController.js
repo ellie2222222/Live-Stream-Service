@@ -1,6 +1,19 @@
 const { deleteStream, updateStream, endStream, findStream, findAllStreams } = require("../services/StreamService");
 
 class StreamController {
+    async getUrlStream (req, res) {
+        
+        try {
+            const { email } = req.body;
+
+            const url = await getUrlStream(email);
+
+            res.status(200).json({ url, message: 'Access granted to live stream' });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    };
+
     // get a stream
     async getStream(req, res) {
         const { streamId } = req.params;
