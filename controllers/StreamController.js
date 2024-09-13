@@ -1,4 +1,4 @@
-const { deleteStream, updateStream, endStream, findStream, findAllStreams } = require("../services/StreamService");
+const { deleteStream, updateStream, endStream, findStream, findAllStreams, getUrlStream } = require("../services/StreamService");
 
 class StreamController {
     async getUrlStream (req, res) {
