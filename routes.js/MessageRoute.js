@@ -1,16 +1,26 @@
-const express = require('express')
-const MessageController = require('../controllers/MessageController');
-const AuthMiddleware = require('../middlewares/AuthMiddleware');
+const express = require("express");
+const MessageController = require("../controllers/MessageController");
+const AuthMiddleware = require("../middlewares/AuthMiddleware");
 const messageController = new MessageController();
 
 const messageRoutes = express.Router();
 
-messageRoutes.delete('/messages/:messageId', AuthMiddleware, messageController.deleteMessage);
+messageRoutes.post("/messages", messageController.createAMessage);
 
-messageRoutes.get('/messages/:messageId', AuthMiddleware, messageController.getMessage);
+messageRoutes.delete("/messages/:messageId", messageController.deleteMessage);
 
-messageRoutes.get('/messages/stream-messages/:streamId', AuthMiddleware, messageController.getMessages);
+messageRoutes.get(
+  "/messages/:messageId",
+  AuthMiddleware,
+  messageController.getMessage
+);
 
-// messageRoutes.patch('/messages/:messageId', AuthMiddleware, messageController.updateMessage);
+messageRoutes.get(
+  "/messages/stream-messages/:streamId",
+  AuthMiddleware,
+  messageController.getMessages
+);
+
+messageRoutes.put("/messages/:messageId", messageController.updateMessage);
 
 module.exports = messageRoutes;
