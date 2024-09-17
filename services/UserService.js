@@ -3,9 +3,12 @@ const validator = require('validator');
 const mongoose = require('mongoose');
 const DatabaseTransaction = require('../repositories/DatabaseTransaction');
 const UserRepository = require('../repositories/UserRepository');
+const upload = require('../middlewares/UploadConfig');
+const uploadToBunny = require('../middlewares/uploadToBunny');
+
 
 // Sign up a new user
-const signup = async (username, email, password) => {
+const signup = async (name, email, password, bio, img) => {
     try {
         const connection = new DatabaseTransaction();
 
@@ -31,17 +34,26 @@ const signup = async (username, email, password) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
+        let avatarUrl = null;
+        if (img) {
+            // Giả sử img.path là đường dẫn đến tệp tin
+            avatarUrl = await uploadToBunny(img);
+        }
+        
         const user = await connection.userRepository.createUser({
-            username,
+            name,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            bio, 
+            avatarUrl,
         });
 
         return user;
     } catch (error) {
         throw new Error(error.message);
     }
-}
+};
+
 
 // Log in a user
 const login = async (email, password) => {
@@ -103,10 +115,8 @@ const updateUserProfile = async (userId, updateData) => {
     try {
         const connection = new DatabaseTransaction();
 
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-            return res.status(400).json({ error: 'Invalid user ID' });
-        }
-
+        console.log('Updating user with data:', updateData);
+        
         const user = await connection.userRepository.updateUser(userId, updateData);
 
         return user;

@@ -21,15 +21,17 @@ class AuthController {
 
     // signup a user
     async signupUser(req, res) {
-        const { username, email, password } = req.body;
+        const { name, email, password, bio } = req.body;
+        const img = req.file ? req.file : null;
 
         try {
-            const user = await signup(username, email, password);
+            const user = await signup(name, email, password, bio, img);
 
             const accessToken = createAccessToken(user._id);
 
             res.status(201).json({ accessToken, message: "Signup success" });
         } catch (error) {
+            
             res.status(500).json({ error: error.message });
         }
     };

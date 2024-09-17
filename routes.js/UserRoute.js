@@ -5,12 +5,12 @@ const userController = new UserController();
 
 const userRoutes = express.Router();
 
-userRoutes.get('/users/', AuthMiddleware, userController.getUsers);
+userRoutes.get('/users/getAllUser', AuthMiddleware, userController.getAllUser);
 
-userRoutes.patch('/users/:userId', AuthMiddleware, userController.updateUser);
+userRoutes.get('/users/getUser', AuthMiddleware, userController.getUser);
 
-userRoutes.get('/users/:userId', AuthMiddleware, userController.getUser);
+userRoutes.put('/users/update', AuthMiddleware, userController.updateUser);
 
-userRoutes.delete('/users/:userId', AuthMiddleware, userController.deleteUser);
+userRoutes.delete('/users/delete', AuthMiddleware, userController.deleteUser);
 
 module.exports = userRoutes;

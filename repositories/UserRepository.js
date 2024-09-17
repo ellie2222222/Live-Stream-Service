@@ -14,6 +14,7 @@ class UserRepository {
     // Update a user by ID
     async updateUser(userId, updateData, session) {
         try {
+            console.log('Updating user in repository:', userId, updateData);
             const user = await User.findByIdAndUpdate(userId, updateData, { new: true, session });
             
             if (!user) {

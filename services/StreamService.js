@@ -3,10 +3,10 @@ const validator = require('validator');
 const mongoose = require('mongoose');
 const DatabaseTransaction = require('../repositories/DatabaseTransaction');
 const UserRepository = require('../repositories/UserRepository');
+const StreamRepository = require('../repositories/StreamRepository');
 const https = require('https');
-const { resolve } = require('path');
-const { rejects } = require('assert');
 const jwt = require("jsonwebtoken");
+const { Stream } = require('stream');
 
 const getUrlStream = async (email) => {
     try {
@@ -21,21 +21,25 @@ const getUrlStream = async (email) => {
             throw new Error('Please login to watch live stream');
         }
 
-        // Lấy URL streaming từ CDN
-        const streamingUrl = new URL('https://myVideoStreamCDN.b-cdn.net/videos/playlist.m3u8');
-        streamingUrl.searchParams.append('email', email);
+        // Lấy URL streaming từ CDN (không thêm email vào URL nữa)
+        const streamingUrl = 'https://myVideoStreamCDN.b-cdn.net/videos/playlist.m3u8';
 
-        return await requestCdnForStream(streamingUrl.toString());
+        return await requestCdnForStream(streamingUrl, email);
     } catch (error) {
         throw new Error(error.message);
     }
 };
 
-// Hàm xử lý yêu cầu tới CDN
-const requestCdnForStream = (url) => {
+// Hàm xử lý yêu cầu tới CDN với email truyền qua header
+const requestCdnForStream = (url, email) => {
     return new Promise((resolve, reject) => {
-        https.get(url, {
-        }, (response) => {
+        const options = {
+            headers: {
+                'X-User-Email': email // Truyền email qua header
+            }
+        };
+
+        https.get(url, options, (response) => {
             let data = '';
 
             response.on('data', (chunk) => {
@@ -47,7 +51,7 @@ const requestCdnForStream = (url) => {
                     if (response.statusCode !== 200) {
                         return reject(new Error(`CDN request failed with status code ${response.statusCode}`));
                     }
-                    
+
                     const jsonData = JSON.parse(data);
                     resolve(jsonData.url);
                 } catch (error) {
@@ -60,40 +64,40 @@ const requestCdnForStream = (url) => {
     });
 };
 
+
 // Sign up a new user
-const createStream = async (username, email, password) => {
+const likeStreamService = async (streamId, action, email) => {
     try {
         const connection = new DatabaseTransaction();
+
+        const stream = await Stream.findById(streamId);
+
+        if (!stream) {
+            throw new Error("Không tìm thấy bài hát");
+        }
 
         if (!validator.isEmail(email)) {
             throw new Error('Invalid email address');
         }
 
-        if (!validator.isStrongPassword(password, {
-            minLength: 8,
-            minLowercase: 1,
-            minUppercase: 1,
-            minNumbers: 1,
-            minSymbols: 1
-        })) {
-            throw new Error('Password is not strong enough');
+        const streamIndex = stream.likedBy.indexOf(email);
+        const isLiking = action === "like";
+
+        if (isLiking && streamIndex === -1) {
+            stream.likedBy.push(email);
+            stream.like += 1;
+        } else if (!isLiking && streamIndex !== -1) {
+            stream.likedBy.splice(streamIndex, 1);
+            stream.like = Math.max(stream.like - 1, 0);
+        } else if (action !== "like" && action !== "unlike") {
+            throw new Error("Hành động không hợp lệ");
         }
 
-        const existingUser = await connection.userRepository.findUserByEmail(email);
-        if (existingUser) {
-            throw new Error('Email is already in use');
-        }
+        await stream.save();
 
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        const updatedStream = await connection.streamRepository.likeStreamRepo(stream);
 
-        const user = await connection.userRepository.createUser({
-            username,
-            email,
-            password: hashedPassword
-        });
-
-        return user;
+        return updatedStream;
     } catch (error) {
         throw new Error(error.message);
     }
@@ -101,5 +105,5 @@ const createStream = async (username, email, password) => {
 
 module.exports = {
     getUrlStream,
-    createStream,
+    likeStreamService,
 };

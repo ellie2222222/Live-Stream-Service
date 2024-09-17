@@ -7,7 +7,9 @@ const streamRoutes = express.Router();
 
 streamRoutes.post('/stream/getUrlStream', AuthMiddleware, streamController.getUrlStream);
 
-streamRoutes.post('/stream/createStream', AuthMiddleware, streamController.createStream);
+streamRoutes.post('/stream/likeStream', AuthMiddleware, streamController.likeStreamControll);
+
+streamRoutes.get('/stream/getTop10Stream', streamController.getTop10Stream);
 
 // userRoutes.patch('/users/:userId', AuthMiddleware, userController.updateUser);
 

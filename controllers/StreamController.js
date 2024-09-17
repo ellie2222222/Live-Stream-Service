@@ -1,6 +1,6 @@
 const { 
     getUrlStream, 
-    createStream,
+    likeStreamService,
 } = require("../services/StreamService");
 
 const mongoose = require("mongoose");
@@ -21,14 +21,27 @@ class StreamController{
         }
     };
 
-    // signup a user
-    async createStream(req, res) {
-        const { username, email, password } = req.body;
-
+    async likeStreamControll(req, res) {
         try {
-            const user = await signup(username, email, password);
 
-            const accessToken = createAccessToken(user._id);
+            const { streamId, action, email } = req.body;
+
+            const likeStream = await likeStreamService(streamId, action, email);
+
+            const accessToken = createAccessToken(likeStream._id);
+
+            res.status(201).json({ accessToken, like: likeStream, message: "CreateStream success" });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    };
+    
+    async getTop10Stream(req, res) {
+        try {
+
+            const { email } = req.body;
+
+            const user = await getTop10Stream(username, email, password);
 
             res.status(201).json({ accessToken, message: "Signup success" });
         } catch (error) {

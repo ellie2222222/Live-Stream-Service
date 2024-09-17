@@ -16,12 +16,12 @@ class StreamRepository {
     }
     
     // Create a new user
-    async createStream(data, session) {
+    async likeStreamRepo(data, session) {
         try {
-            const user = await Stream.create([data], { session });
-            return user[0];
+            const updatedStream = await Stream.findByIdAndUpdate(data._id, data, { new: true, session });
+            return updatedStream;
         } catch (error) {
-            throw new Error(`Error creating user: ${error.message}`);
+            throw new Error(`Error creating like: ${error.message}`);
         }
     }
 }

@@ -13,23 +13,20 @@ const streamSchema = new Schema( {
         required: true,
         unique: true
     },
-    password: {
-        type: String,
-        required: true
-    },
-    bio: {
-        type: String,
-        default: '',
-    },
-    avatarUrl: {
-        type: String,
-        default: '',
-    },
     isDelete: {
         type: Boolean,
         required: true,
         default: false,
-    }
+    },
+    like: {
+        type: Number,
+        default: 0,
+    },
+    likedBy: [
+      {
+        type: String,
+      },
+    ],
 }, {timestamps: true})
 
 module.exports = mongoose.model('Stream', streamSchema);
