@@ -15,8 +15,11 @@ class StreamRepository {
     async endStream(streamId, session) {
         try {
             const stream = await Stream.findByIdAndUpdate(
-                streamId,
-                { endedAt: new Date() },
+                streamId, 
+                { 
+                    endedAt: new Date(),
+                    streamUrl: '',
+                },
                 { new: true, runValidators: true, session }
             );
 

@@ -1,14 +1,13 @@
-const { deleteStream, updateStream, endStream, findStream, findAllStreams, getUrlStream } = require("../services/StreamService");
+const { deleteStream, updateStream, endStream, findStream, findAllStreams, startStream, saveStream, getStreamUrl } = require("../services/StreamService");
 
 class StreamController {
-    async getUrlStream (req, res) {
-        
+    async getStreamUrl (req, res) {
+        const { streamId } = req.params;
+
         try {
-            const { email } = req.body;
+            const streamUrl = await getStreamUrl(streamId);
 
-            const url = await getUrlStream(email);
-
-            res.status(200).json({ url, message: 'Access granted to live stream' });
+            res.status(200).json({ data: streamUrl, message: 'Success' });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
@@ -38,12 +37,35 @@ class StreamController {
         }
     };
 
+    async saveStream(req, res) {
+        const { streamId } = req.body;
+        const userId = req.userId
+    
+        try {
+            await saveStream(streamId, userId);
+
+            return res.status(200).json({ message: 'Stream saved successfully' });
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    };
+
     // create a stream
     async startStream(req, res) {
-        try {
-            const stream = null;
+        const { title, thumbnailUrl, categories } = req.body;
+        const userId = req.userId;
+        const data = { title, thumbnailUrl, userId, categories };
+        const responseData = {
+            streamRTMP: null,
+            streamKey: null,
+        }
 
-            res.status(200).json({ data: stream, message: "Success" });
+        try {
+            const stream = await startStream(data);
+
+            responseData.stream = stream;
+
+            res.status(200).json({ data: responseData, message: "Success" });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }

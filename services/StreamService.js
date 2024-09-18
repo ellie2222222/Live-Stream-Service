@@ -1,53 +1,18 @@
 const bcrypt = require('bcrypt');
-const validator = require('validator');
 const mongoose = require('mongoose');
 const DatabaseTransaction = require('../repositories/DatabaseTransaction');
-const UserRepository = require('../repositories/UserRepository');
-const https = require('https');
-const { resolve } = require('path');
-const { rejects } = require('assert');
-const jwt = require("jsonwebtoken");
 
-const getUrlStream = async (email) => {
+const getStreamUrl = async (streamId) => {
     try {
-        // Lấy URL streaming từ CDN
-        const streamingUrl = new URL('https://myVideoStreamCDN.b-cdn.net/videos/playlist.m3u8');
-        streamingUrl.searchParams.append('email', email);
+        const connection = new DatabaseTransaction();
+        const stream = await connection.streamRepository.getStreamById(streamId);
 
-        return await requestCdnForStream(streamingUrl.toString());
+        return stream._id;
     } catch (error) {
         throw new Error(error.message);
     }
 };
 
-// Hàm xử lý yêu cầu tới CDN
-const requestCdnForStream = (url) => {
-    return new Promise((resolve, reject) => {
-        https.get(url, {
-        }, (response) => {
-            let data = '';
-
-            response.on('data', (chunk) => {
-                data += chunk;
-            });
-
-            response.on('end', () => {
-                try {
-                    if (response.statusCode !== 200) {
-                        return reject(new Error(`CDN request failed with status code ${response.statusCode}`));
-                    }
-
-                    const jsonData = JSON.parse(data);
-                    resolve(jsonData.url);
-                } catch (error) {
-                    reject(new Error('Failed to parse response from CDN'));
-                }
-            });
-        }).on('error', (err) => {
-            reject(new Error(`Request to CDN failed: ${err.message}`));
-        });
-    });
-};
 
 const findStream = async (streamId) => {
     try {
@@ -125,12 +90,224 @@ const endStream = async (streamId) => {
     }
 }
 
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+const moment = require('moment');
+const ffmpeg = require('fluent-ffmpeg');
+const https = require('https');
+
+// Node Media Server configuration (if needed)
+const NodeMediaServer = require('node-media-server');
+
+// Define the RTMP URL and output directory
+const inputURL = 'rtmp://localhost:1935/live/supersecret';
+const outputDir = os.tmpdir();
+
+// Function to upload a file to BunnyCDN
+const uploadToBunnyCDN = async (filePath, fileName, userFolder) => {
+    const readStream = fs.createReadStream(filePath);
+    const storageZone = process.env.BUNNYCDN_STORAGE_ZONE_NAME;
+
+    const options = {
+        method: 'PUT',
+        host: 'storage.bunnycdn.com',
+        path: `/${storageZone}/video/${userFolder}/${fileName}`,
+        headers: {
+            AccessKey: process.env.BUNNYCDN_STORAGE_PASSWORD,
+            'Content-Type': 'application/octet-stream',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate', // Disable caching
+            'Expires': '0',
+            'Pragma': 'no-cache',
+        },
+    };
+
+    const req = https.request(options, (res) => {
+        res.on('data', (chunk) => {
+            console.log(chunk.toString('utf8'));
+        });
+    });
+
+    req.on('error', (error) => {
+        console.error(error);
+    });
+
+    readStream.pipe(req);
+};
+
+// Function to delete folder from BunnyCDN
+const deleteFromBunnyCDN = async (userFolder) => {
+    const storageZone = process.env.BUNNYCDN_STORAGE_ZONE_NAME;
+
+    const options = {
+        method: 'DELETE',
+        host: 'storage.bunnycdn.com',
+        path: `/${storageZone}/${userFolder}`,
+        headers: {
+            AccessKey: process.env.BUNNYCDN_STORAGE_PASSWORD,
+        },
+    };
+
+    return new Promise((resolve, reject) => {
+        const req = https.request(options, (res) => {
+            let responseBody = '';
+            res.on('data', (chunk) => {
+                responseBody += chunk.toString();
+            });
+            res.on('end', () => {
+                if (res.statusCode === 404) {
+                    resolve('Folder not found');
+                } else if (res.statusCode === 200) {
+                    console.log(`Deleted folder ${userFolder}: ${responseBody}`);
+                    resolve(responseBody);
+                } else {
+                    reject(new Error(`Failed to delete folder ${userFolder}: ${res.statusCode}`));
+                }
+            });
+        });
+
+        req.on('error', (error) => {
+            reject(error);
+        });
+
+        req.end();
+    });
+};
+
+const purgeBunnyCDNCache = async () => {
+    const options = {
+        method: 'POST',
+        host: 'api.bunny.net',
+        path: `/pullzone/${process.env.BUNNYCDN_PULLZONE_ID}/purgeCache`,
+        headers: {
+            AccessKey: process.env.BUNNYCDN_API_KEY,
+        },
+    };
+
+    const req = https.request(options, (res) => {
+        res.on('data', (chunk) => {
+            console.log(chunk.toString('utf8'));
+        });
+    });
+
+    req.on('error', (error) => {
+        console.error(error);
+    });
+
+    req.end();
+};
+
+// Function to replace .ts file paths in .m3u8 with BunnyCDN URLs
+const replaceTsWithCDN = (m3u8FilePath, cdnUrl, mainFileName, userFolder) => {
+    let m3u8Content = fs.readFileSync(m3u8FilePath, 'utf8');
+    m3u8Content = m3u8Content.replace(new RegExp(`${mainFileName}-${userFolder}-segment-\\d{3}\\.ts`, 'g'), (match) => {
+        return `${cdnUrl}${match}`;
+    });
+    fs.writeFileSync(m3u8FilePath, m3u8Content);
+};
+
+// Function to upload .ts segment files
+async function uploadTsFiles(mainFileName) {
+    const files = fs.readdirSync(outputDir);
+    for (const file of files) {
+        if (file.endsWith('.ts') && file.includes(mainFileName)) {
+            const filePath = path.join(outputDir, file);
+            const fileName = path.basename(file);
+            await uploadToBunnyCDN(filePath, fileName);
+        }
+    }
+}
+
+// Function to save the stream using FFmpeg
+const saveStreamToBunny = async (userFolder) => {
+    const epochTime = moment().format('HH_mm_ss');
+    const mainFileName = "stream-result";
+    const outputFilename = `${outputDir}/${mainFileName}.m3u8`;
+    const hostName = process.env.BUNNYCDN_HOSTNAME || "live-stream-platform.b-cdn.net";
+    try {
+
+        ffmpeg(inputURL)
+            .inputFormat('flv')
+            .outputOptions([
+                '-hls_time 15',
+                '-hls_list_size 5',
+                '-hls_flags delete_segments',
+                `-hls_segment_filename ${outputDir}/${mainFileName}-${userFolder}-segment-%03d.ts`,
+                '-t 30',
+                '-f hls',
+            ])
+            .output(outputFilename)
+            .on('end', async () => {
+                replaceTsWithCDN(outputFilename, `https://${hostName}/video/${userFolder}/`, mainFileName, userFolder);
+                await deleteFromBunnyCDN(userFolder);
+                await uploadToBunnyCDN(outputFilename, `${userFolder}-stream-result.m3u8`, userFolder);
+                await uploadTsFiles(mainFileName);
+                await purgeBunnyCDNCache();
+            })
+            .on('error', (err) => {
+                console.error('Error:', err);
+            })
+            .run();
+    } catch (error) {
+        throw new Error(error.message)
+    }
+}
+
+// Consolidated function for starting the stream and managing all stream-related tasks
+const startStream = async (data) => {
+    try {
+        const connection = new DatabaseTransaction();
+
+        if (!data.title || typeof data.title !== 'string' || data.title.length < 1 || data.title.length > 100) {
+            throw new Error('Title must be between 1 and 100 characters.');
+        }
+
+        if (!data.userId || !mongoose.Types.ObjectId.isValid(data.userId)) {
+            throw new Error('Valid userId is required.');
+        }
+
+        if (!Array.isArray(data.categories) || !data.categories.every(cat => typeof cat === 'string')) {
+            throw new Error('Categories must be an array of strings.');
+        }
+
+        const stream = await connection.streamRepository.createStream(data);
+
+        const user = await connection.userRepository.getUserById(data.userId)
+
+        // Call saveStream for HLS processing and BunnyCDN management
+        saveStreamToBunny(user.email);
+
+        return stream;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
+const saveStream = async (streamId, userId) => {
+    if (!mongoose.Types.ObjectId.isValid(streamId)) {
+        return res.status(400).json({ error: 'Invalid stream ID' });
+    }
+
+    try {
+        const connection = new DatabaseTransaction();
+
+        const user = await connection.userRepository.getUserById(userId)
+
+        saveStreamToBunny(user.email);
+
+        return true;
+    } catch (error) {
+        throw new Error(error.message)
+    }
+};
+
 module.exports = {
     findStream,
     findAllStreams,
+    startStream,
     endStream,
     updateStream,
     deleteStream,
-    getUrlStream,
-    requestCdnForStream,
+    saveStream,
+    getStreamUrl,
 };

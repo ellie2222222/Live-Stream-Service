@@ -17,6 +17,8 @@ const AuthMiddleware = async (req, res, next) => {
             return res.status(400).json({ error: 'Invalid user ID' });
         }
 
+        req.userId = _id;
+
         next();
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
