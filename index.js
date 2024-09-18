@@ -43,40 +43,40 @@ app.use((req, res, next) => {
   next();
 });
 
-// Node Media Server configuration
-const config = {
-  rtmp: {
-    port: 1935,
-    chunk_size: 60000,
-    gop_cache: true,
-    ping: 60,
-    ping_timeout: 30,
-    allow_origin: '*',
-  },
-  http: {
-    port: 8000,
-    mediaroot: './output',
-    allow_origin: '*',
-  },
-};
+// // Node Media Server configuration
+// const config = {
+//   rtmp: {
+//     port: 1935,
+//     chunk_size: 60000,
+//     gop_cache: true,
+//     ping: 60,
+//     ping_timeout: 30,
+//     allow_origin: '*',
+//   },
+//   http: {
+//     port: 8000,
+//     mediaroot: './output',
+//     allow_origin: '*',
+//   },
+// };
 
-// Create an instance of the media server
-const nms = new NodeMediaServer(config);
+// // Create an instance of the media server
+// const nms = new NodeMediaServer(config);
 
-// Handle the 'postPublish' event to start saving the stream once it's live
-nms.on('postPublish', async (_, streamPath, _params) => {
-  const streamKey = streamPath.split('/').pop();
+// // Handle the 'postPublish' event to start saving the stream once it's live
+// nms.on('postPublish', async (_, streamPath, _params) => {
+//   const streamKey = streamPath.split('/').pop();
 
-  try {
-    await saveStreamToBunny(streamKey);
-  } catch (error) {
-    console.error(`Failed to save stream for key '${streamKey}': ${error.message}`);
-  }
-});
+//   try {
+//     await saveStreamToBunny(streamKey);
+//   } catch (error) {
+//     console.error(`Failed to save stream for key '${streamKey}': ${error.message}`);
+//   }
+// });
 
 
-// Start the media server
-nms.run();
+// // Start the media server
+// nms.run();
 
 // start express server
 const port = process.env.DEVELOPMENT_PORT || 4000;
