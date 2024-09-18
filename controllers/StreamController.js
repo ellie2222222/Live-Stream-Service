@@ -1,6 +1,32 @@
-const { deleteStream, updateStream, endStream, findStream, findAllStreams, startStream, saveStream, getStreamUrl } = require("../services/StreamService");
+const { deleteStream, updateStream, endStream, findStream, findAllStreams, startStream, saveStream, getStreamUrl, getStreamsByCategory, likeStreamService } = require("../services/StreamService");
 
 class StreamController {
+    async getCategories(req, res) {
+        try {
+            const token = req.userId;
+    
+            const categories = await getStreamsByCategory(token);
+    
+            res.status(200).json({ data: categories, message: 'Success' });
+        } catch (error) {
+            console.error('Error in getCate:', error.message);
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    async likeStream(req, res) {
+        try {
+
+            const { streamId, action, email } = req.body;
+
+            const likeStream = await likeStreamService(streamId, action, email);
+
+            res.status(201).json({ like: likeStream, message: "CreateStream success" });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    };
+
     async getStreamUrl (req, res) {
         const { streamId } = req.params;
 

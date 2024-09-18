@@ -21,4 +21,8 @@ streamRoutes.patch('/streams/:streamId', AuthMiddleware, streamController.update
 
 streamRoutes.get('/streams/stream-url/:streamId', AuthMiddleware, streamController.getStreamUrl);
 
+streamRoutes.get('/streams/categories', AuthMiddleware, streamController.getCategories);
+
+streamRoutes.post('/streams/like', AuthMiddleware, streamController.likeStream);
+
 module.exports = streamRoutes;
