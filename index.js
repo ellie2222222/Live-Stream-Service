@@ -17,7 +17,7 @@ const io = socketIo(server, {
     methods: ["GET", "POST"],
   },
 });
-
+let viewersCount = 0;
 // Middleware
 app.use(
   cors({
@@ -78,6 +78,8 @@ async function createVideoEntry() {
 }
 
 io.on("connection", (socket) => {
+  viewersCount++;
+  io.emit("views", viewersCount);
   console.log("A user connected");
 
   socket.on("video_chunk", (chunk) => {
@@ -92,6 +94,8 @@ io.on("connection", (socket) => {
     });
   });
   socket.on("disconnect", async () => {
+    viewersCount--;
+    io.emit("views", viewersCount); // Send updated count to all clients
     console.log("User disconnected");
 
     // Save buffer to file
