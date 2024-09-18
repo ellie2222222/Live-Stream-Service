@@ -38,7 +38,7 @@ class StreamController {
     };
 
     async saveStream(req, res) {
-        const { streamId } = req.body;
+        const { streamId } = req.params;
         const userId = req.userId
     
         try {
@@ -61,9 +61,11 @@ class StreamController {
         }
 
         try {
-            const stream = await startStream(data);
+            const returnData = await startStream(data);
 
-            responseData.stream = stream;
+            responseData.stream = returnData.stream;
+            responseData.streamKey = returnData.email;
+            responseData.streamRTMP = returnData.streamRTMP;
 
             res.status(200).json({ data: responseData, message: "Success" });
         } catch (error) {
@@ -73,7 +75,7 @@ class StreamController {
 
     // end a stream
     async endStream(req, res) {
-        const { streamId } = req.body;
+        const { streamId } = req.params;
 
         try {
             const stream = await endStream(streamId);

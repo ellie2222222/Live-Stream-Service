@@ -13,6 +13,7 @@ const userRoutes = require('./routes.js/UserRoute');
 const streamRoutes = require('./routes.js/StreamRoute');
 const messageRoutes = require('./routes.js/MessageRoute');
 const NodeMediaServer = require('node-media-server');
+const { saveStreamToBunny } = require("./services/StreamService");
 
 // application
 const app = express();
@@ -63,11 +64,16 @@ const config = {
 const nms = new NodeMediaServer(config);
 
 // Handle the 'postPublish' event to start saving the stream once it's live
-nms.on('postPublish', (_, streamPath, _params) => {
-  if (streamPath.endsWith('supersecret')) {
-    saveStream();
+nms.on('postPublish', async (_, streamPath, _params) => {
+  const streamKey = streamPath.split('/').pop();
+
+  try {
+    await saveStreamToBunny(streamKey);
+  } catch (error) {
+    console.error(`Failed to save stream for key '${streamKey}': ${error.message}`);
   }
 });
+
 
 // Start the media server
 nms.run();

@@ -97,11 +97,6 @@ const moment = require('moment');
 const ffmpeg = require('fluent-ffmpeg');
 const https = require('https');
 
-// Node Media Server configuration (if needed)
-const NodeMediaServer = require('node-media-server');
-
-// Define the RTMP URL and output directory
-const inputURL = 'rtmp://localhost:1935/live/supersecret';
 const outputDir = os.tmpdir();
 
 // Function to upload a file to BunnyCDN
@@ -207,26 +202,34 @@ const replaceTsWithCDN = (m3u8FilePath, cdnUrl, mainFileName, userFolder) => {
 };
 
 // Function to upload .ts segment files
-async function uploadTsFiles(mainFileName) {
+async function uploadTsFiles(mainFileName, userFolder) {
     const files = fs.readdirSync(outputDir);
     for (const file of files) {
-        if (file.endsWith('.ts') && file.includes(mainFileName)) {
+        if (file.endsWith('.ts') && file.includes(mainFileName) && file.includes(userFolder)) {
             const filePath = path.join(outputDir, file);
             const fileName = path.basename(file);
-            await uploadToBunnyCDN(filePath, fileName);
+            await uploadToBunnyCDN(filePath, fileName, userFolder);
         }
     }
 }
 
+let inputURL = 'rtmp://localhost:1935/live';
+
 // Function to save the stream using FFmpeg
 const saveStreamToBunny = async (userFolder) => {
-    const epochTime = moment().format('HH_mm_ss');
     const mainFileName = "stream-result";
     const outputFilename = `${outputDir}/${mainFileName}.m3u8`;
     const hostName = process.env.BUNNYCDN_HOSTNAME || "live-stream-platform.b-cdn.net";
     try {
+        const connection = new DatabaseTransaction();
+        const email = await connection.userRepository.findUserByEmail(userFolder);
+        if (!email) {
+            throw new Error("Invalid key")
+        }
+        
+        inputStream = `${inputURL}/${userFolder}`;
 
-        ffmpeg(inputURL)
+        ffmpeg(inputStream)
             .inputFormat('flv')
             .outputOptions([
                 '-hls_time 15',
@@ -241,7 +244,7 @@ const saveStreamToBunny = async (userFolder) => {
                 replaceTsWithCDN(outputFilename, `https://${hostName}/video/${userFolder}/`, mainFileName, userFolder);
                 await deleteFromBunnyCDN(userFolder);
                 await uploadToBunnyCDN(outputFilename, `${userFolder}-stream-result.m3u8`, userFolder);
-                await uploadTsFiles(mainFileName);
+                await uploadTsFiles(mainFileName, userFolder);
                 await purgeBunnyCDNCache();
             })
             .on('error', (err) => {
@@ -253,7 +256,6 @@ const saveStreamToBunny = async (userFolder) => {
     }
 }
 
-// Consolidated function for starting the stream and managing all stream-related tasks
 const startStream = async (data) => {
     try {
         const connection = new DatabaseTransaction();
@@ -272,12 +274,10 @@ const startStream = async (data) => {
 
         const stream = await connection.streamRepository.createStream(data);
 
-        const user = await connection.userRepository.getUserById(data.userId)
+        const user = await connection.userRepository.findUserById(data.userId);
 
-        // Call saveStream for HLS processing and BunnyCDN management
-        saveStreamToBunny(user.email);
-
-        return stream;
+        returnData = { stream, streamRTMP: inputURL, email: user.email };
+        return returnData;
     } catch (error) {
         throw new Error(error.message);
     }
@@ -291,9 +291,9 @@ const saveStream = async (streamId, userId) => {
     try {
         const connection = new DatabaseTransaction();
 
-        const user = await connection.userRepository.getUserById(userId)
+        const user = await connection.userRepository.findUserById(userId)
 
-        saveStreamToBunny(user.email);
+        await saveStreamToBunny(user.email);
 
         return true;
     } catch (error) {
@@ -310,4 +310,5 @@ module.exports = {
     deleteStream,
     saveStream,
     getStreamUrl,
+    saveStreamToBunny,
 };
