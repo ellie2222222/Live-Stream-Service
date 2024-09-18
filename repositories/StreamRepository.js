@@ -24,6 +24,20 @@ class StreamRepository {
             throw new Error(`Error creating like: ${error.message}`);
         }
     }
+
+    async findStreamsByToken(token) {
+        try {
+            const streams  = await Stream.find({ _id: token, isDeleted: false });
+
+            if (!streams || streams.length === 0) {
+                throw new Error(`No streams found for user with ID ${token}`);
+            }
+
+            return streams;
+        } catch (error) {
+            throw new Error(`Error finding user: ${error.message}`);
+        }
+    }
 }
 
 module.exports = StreamRepository;

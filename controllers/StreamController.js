@@ -1,5 +1,5 @@
 const { 
-    getUrlStream, 
+    getStreamsByCategory, 
     likeStreamService,
 } = require("../services/StreamService");
 
@@ -8,18 +8,18 @@ const jwt = require("jsonwebtoken");
 const createAccessToken = require("../utils/createAccessToken");
 
 class StreamController{
-    async getUrlStream (req, res) {
-        
+    async getCate(req, res) {
         try {
-            const { email } = req.body;
-
-            const url = await getUrlStream(email);
-
-            res.status(200).json({ url, message: 'Access granted to live stream' });
+            const token = req.userId;
+    
+            const categories = await getStreamsByCategory(token);
+    
+            res.status(200).json({ data: categories, message: 'Success' });
         } catch (error) {
+            console.error('Error in getCate:', error.message);
             res.status(500).json({ error: error.message });
         }
-    };
+    }
 
     async likeStreamControll(req, res) {
         try {

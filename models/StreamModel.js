@@ -13,18 +13,24 @@ const streamSchema = new Schema( {
         required: true,
         unique: true
     },
-    isDelete: {
+    isDeleted: {
         type: Boolean,
         required: true,
         default: false,
     },
-    like: {
+    currentViewCount: {
         type: Number,
         default: 0,
     },
-    likedBy: [
+    likes: [
       {
         type: String,
+      },
+    ],
+    categories: [
+      {
+      type: String,
+      required: true,
       },
     ],
 }, {timestamps: true})

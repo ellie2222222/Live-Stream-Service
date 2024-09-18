@@ -12,10 +12,9 @@ class UserRepository {
     }
 
     // Update a user by ID
-    async updateUser(userId, updateData, session) {
+    async updateUser(userId, updateData) {
         try {
-            console.log('Updating user in repository:', userId, updateData);
-            const user = await User.findByIdAndUpdate(userId, updateData, { new: true, session });
+            const user = await User.findByIdAndUpdate(userId, updateData, { new: true });
             
             if (!user) {
                 throw new Error(`User with ID ${userId} not found`);

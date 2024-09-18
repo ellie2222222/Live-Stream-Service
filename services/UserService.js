@@ -2,9 +2,8 @@ const bcrypt = require('bcrypt');
 const validator = require('validator');
 const mongoose = require('mongoose');
 const DatabaseTransaction = require('../repositories/DatabaseTransaction');
-const UserRepository = require('../repositories/UserRepository');
 const upload = require('../middlewares/UploadConfig');
-const uploadToBunny = require('../middlewares/uploadToBunny');
+const { uploadToBunny, deleteFromBunny } = require('../middlewares/uploadToBunny');
 
 
 // Sign up a new user
@@ -114,10 +113,8 @@ const findAllUsers = async (userId) => {
 const updateUserProfile = async (userId, updateData) => {
     try {
         const connection = new DatabaseTransaction();
-
-        console.log('Updating user with data:', updateData);
         
-        const user = await connection.userRepository.updateUser(userId, updateData);
+        const user = await connection.userRepository.updateUser(userId, updateData, connection.session);
 
         return user;
     } catch (error) {

@@ -9,9 +9,8 @@ const uploadToBunny = async (file) => {
         const storageUrl = process.env.BUNNY_STORAGE_URL;
         const cdn = process.env.BUNNY_STORAGE_CDN;
 
-        // Đọc tệp từ đối tượng file (Buffer)
         const fileStream = new stream.PassThrough();
-        fileStream.end(file.buffer); // file.buffer chứa nội dung của tệp
+        fileStream.end(file.buffer);
 
         const fileName = file.originalname;
 
@@ -22,7 +21,7 @@ const uploadToBunny = async (file) => {
         const response = await axios.put(uploadUrl, fileStream, {
             headers: {
                 'Content-Type': file.mimetype,
-                'AccessKey': password, // Sử dụng AccessKey trong header
+                'AccessKey': password,
             }
         });
 
@@ -35,11 +34,14 @@ const uploadToBunny = async (file) => {
 
 const deleteFromBunny = async (fileUrl) => {
     try {
+        // if (typeof fileUrl !== 'string') {
+        //     throw new Error('Invalid file URL');
+        // }
+        
         const fileName = fileUrl.split('/').pop();
         const zoneName = process.env.BUNNY_STORAGE_ZONE_NAME;
         const password = process.env.BUNNY_STORAGE_PASSWORD;
         const storageUrl = process.env.BUNNY_STORAGE_URL;
-        const cdn = process.env.BUNNY_STORAGE_CDN;
 
         const deleteUrl = `https://${storageUrl}/${zoneName}/${fileName}`;
 
@@ -49,12 +51,13 @@ const deleteFromBunny = async (fileUrl) => {
             }
         });
 
-        return `https://${cdn}/${fileName}`;
     } catch (error) {
         console.error('Error deleting file:', error.message);
         throw error;
     }
 };
 
-module.exports = uploadToBunny;
-module.exports = deleteFromBunny;
+module.exports = {
+    uploadToBunny,
+    deleteFromBunny
+};
