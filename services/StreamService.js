@@ -82,6 +82,15 @@ const endStream = async (streamId) => {
             return res.status(400).json({ error: 'Invalid stream ID' });
         }
 
+        if (!stream) {
+            throw new Error('Stream not found');
+        }
+
+        const user = await connection.userRepository.findUserById(stream.userId);
+        const userFolder = user.email; // Assuming the folder is named by the user's email
+
+        await deleteFromBunnyCDN(userFolder);
+
         const stream = await connection.streamRepository.endStream(streamId);
 
         return stream;
@@ -131,17 +140,18 @@ const uploadToBunnyCDN = async (filePath, fileName, userFolder) => {
 };
 
 // Function to delete folder from BunnyCDN
-const deleteFromBunnyCDN = async (userFolder) => {
+const deleteFromBunnyCDN = async (userFolder, fileName) => {
     const storageZone = process.env.BUNNYCDN_STORAGE_ZONE_NAME;
 
     const options = {
         method: 'DELETE',
         host: 'storage.bunnycdn.com',
-        path: `/${storageZone}/${userFolder}`,
+        path: `/${storageZone}/video/${userFolder}/${fileName}`,
         headers: {
             AccessKey: process.env.BUNNYCDN_STORAGE_PASSWORD,
         },
     };
+    console.log(options.path)
 
     return new Promise((resolve, reject) => {
         const req = https.request(options, (res) => {
@@ -233,7 +243,7 @@ const saveStreamToBunny = async (userFolder) => {
             .inputFormat('flv')
             .outputOptions([
                 '-hls_time 15',
-                '-hls_list_size 5',
+                '-hls_list_size 0',
                 '-hls_flags delete_segments',
                 `-hls_segment_filename ${outputDir}/${mainFileName}-${userFolder}-segment-%03d.ts`,
                 '-t 30',
@@ -242,8 +252,8 @@ const saveStreamToBunny = async (userFolder) => {
             .output(outputFilename)
             .on('end', async () => {
                 replaceTsWithCDN(outputFilename, `https://${hostName}/video/${userFolder}/`, mainFileName, userFolder);
-                await deleteFromBunnyCDN(userFolder);
-                await uploadToBunnyCDN(outputFilename, `${userFolder}-stream-result.m3u8`, userFolder);
+                await deleteFromBunnyCDN(userFolder, `stream-result-${userFolder}.m3u8`);
+                await uploadToBunnyCDN(outputFilename, `stream-result-${userFolder}.m3u8`, userFolder);
                 await uploadTsFiles(mainFileName, userFolder);
                 await purgeBunnyCDNCache();
             })
