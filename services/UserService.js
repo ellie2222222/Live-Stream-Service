@@ -5,7 +5,7 @@ const DatabaseTransaction = require("../repositories/DatabaseTransaction");
 const UserRepository = require("../repositories/UserRepository");
 
 // Sign up a new user
-const signup = async (username, email, password, avatarUrl) => {
+const signup = async (username, email, password, bio, avatarUrl) => {
   try {
     const connection = new DatabaseTransaction();
 
@@ -37,6 +37,7 @@ const signup = async (username, email, password, avatarUrl) => {
       username,
       email,
       password: hashedPassword,
+      bio,
       avatarUrl,
     });
 

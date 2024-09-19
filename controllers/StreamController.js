@@ -7,7 +7,12 @@ const {
   getUrlStream,
   dislikeByUserService,
   likeByUserService,
+  createAStreamService,
 } = require("../services/StreamService");
+const fs = require("fs");
+const BUNNY_CDN_URL = "https://sg.storage.bunnycdn.com/live-stream-service/";
+const BUNNY_CDN_API_KEY = "e68740b8-e7b2-4df2-82b616b8ab35-77e2-42d6";
+const axios = require("axios");
 
 class StreamController {
   async getUrlStream(req, res) {
@@ -47,10 +52,43 @@ class StreamController {
 
   // create a stream
   async startStream(req, res) {
+    const { title, description, categories, userId } = req.body;
+    const thumbnailFile = req.file;
+    let thumbnailUrl = "";
+    if (!thumbnailFile) {
+      return res.status(400).send("Thumbnail file is required");
+    }
     try {
-      const stream = null;
+      const fileStream = fs.createReadStream(thumbnailFile.path);
 
-      res.status(200).json({ data: stream, message: "Success" });
+      const headers = {
+        AccessKey: BUNNY_CDN_API_KEY,
+        "Content-Type": thumbnailFile.mimetype,
+      };
+      const name = thumbnailFile.originalname.trim().replace(/\s+/g, "%20");
+      const uniqueName = `${Date.now()}-${name}`;
+      const bunnyCdnResponse = await axios.put(
+        `${BUNNY_CDN_URL}${uniqueName}`, // Define the storage path and file name
+        fileStream,
+        { headers }
+      );
+      fs.unlinkSync(thumbnailFile.path);
+
+      console.log("File uploaded successfully:", bunnyCdnResponse.data);
+      thumbnailUrl = `https://live-stream-service.b-cdn.net/${uniqueName}`;
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+
+    try {
+      const stream = await createAStreamService(
+        userId,
+        title,
+        description,
+        categories,
+        thumbnailUrl
+      );
+      res.status(201).json({ message: "Create stream success", data: stream });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

@@ -163,6 +163,28 @@ const likeByUserService = async (streamId, userId) => {
   } catch (error) {}
 };
 
+const createAStreamService = async (
+  userId,
+  title,
+  description,
+  categories,
+  thumbnailUrl
+) => {
+  try {
+    const connection = new DatabaseTransaction();
+    const result = await connection.streamRepository.createStream({
+      userId,
+      title,
+      description,
+      categories,
+      thumbnailUrl,
+    });
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 module.exports = {
   findStream,
   findAllStreams,
@@ -173,4 +195,5 @@ module.exports = {
   requestCdnForStream,
   dislikeByUserService,
   likeByUserService,
+  createAStreamService,
 };
