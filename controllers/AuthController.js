@@ -1,10 +1,7 @@
+const { uploadToBunny } = require("../middlewares/UploadToBunny");
 const { login, signup } = require("../services/UserService");
-
 const createAccessToken = require("../utils/createAccessToken");
-const axios = require("axios");
-const fs = require("fs");
-const BUNNY_CDN_URL = "https://sg.storage.bunnycdn.com/live-stream-service/";
-const BUNNY_CDN_API_KEY = "e68740b8-e7b2-4df2-82b616b8ab35-77e2-42d6";
+require("dotenv").config();
 class AuthController {
   // login a user
   async loginUser(req, res) {
@@ -24,23 +21,21 @@ class AuthController {
   // signup a user
   async signupUser(req, res) {
     const { name, email, password, bio } = req.body;
-    const img = req.file ? req.file : null;
+    const avatarFile = req.file;
+
+    if (!avatarFile) {
+      return res.status(400).send({ message: "Avatar file is required" });
+    }
 
     try {
-      const user = await signup(name, email, password, bio, img);
+      const avatarUrl = await uploadToBunny(avatarFile);
 
-      const accessToken = createAccessToken(
-        user._id,
-        user.email,
-        user.username,
-        user.avatarUrl
-      );
+      const user = await signup(name, email, password, bio, avatarUrl);
 
-      res.status(201).json({ accessToken, message: "Signup success" });
+      res.status(201).json({ message: "Signup success" });
     } catch (error) {
-
-      res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: error.message });
     }
-  };
+  }
 }
 module.exports = AuthController;

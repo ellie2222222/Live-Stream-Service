@@ -5,7 +5,7 @@ const DatabaseTransaction = require("../repositories/DatabaseTransaction");
 const { uploadToBunny } = require("../middlewares/UploadToBunny");
 
 // Sign up a new user
-const signup = async (name, email, password, bio, img) => {
+const signup = async (name, email, password, bio, avatar) => {
   try {
       const connection = new DatabaseTransaction();
 
@@ -32,8 +32,8 @@ const signup = async (name, email, password, bio, img) => {
       const hashedPassword = await bcrypt.hash(password, salt);
 
       let avatarUrl = null;
-      if (img) {
-          avatarUrl = await uploadToBunny(img);
+      if (avatar) {
+          avatarUrl = await uploadToBunny(avatar);
       }
       
       const user = await connection.userRepository.createUser({

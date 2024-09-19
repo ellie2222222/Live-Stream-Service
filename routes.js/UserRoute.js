@@ -8,7 +8,7 @@ const userRoutes = express.Router();
 
 userRoutes.get("/users/", AuthMiddleware, userController.getUsers);
 
-userRoutes.patch("/users/:userId", AuthMiddleware, upload.single('img'), userController.updateUser);
+userRoutes.patch("/users/:userId", AuthMiddleware, upload.single('avatar'), userController.updateUser);
 
 userRoutes.get("/users/:userId", AuthMiddleware, userController.getUser);
 

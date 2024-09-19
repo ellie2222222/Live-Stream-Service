@@ -26,17 +26,14 @@ const streamSchema = new Schema(
       default: null,
     },
     currentViewCount: {
-        type: Number,
-        default: 0,
+      type: Number,
+      default: 0,
     },
     isDeleted: {
       type: Boolean,
       required: true,
       default: false,
     },
-  },
-  { timestamps: true }
-);
     likes: [
       {
         type: String,
@@ -44,10 +41,10 @@ const streamSchema = new Schema(
     ],
     categories: [
       {
-      type: String,
-      required: true,
+        type: String,
+        required: true,
       },
     ],
-}, {timestamps: true})
+  }, { timestamps: true })
 
 module.exports = mongoose.model("Stream", streamSchema);

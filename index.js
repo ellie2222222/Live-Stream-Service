@@ -147,4 +147,3 @@ app.listen(port, (err) => {
     console.log(`Streaming server running on port ${config.http.port}`);
   }
 });
-``;

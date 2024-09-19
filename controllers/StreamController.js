@@ -10,8 +10,10 @@ const {
   createAStreamService,
 } = require("../services/StreamService");
 const fs = require("fs");
-const BUNNY_CDN_URL = "https://sg.storage.bunnycdn.com/live-stream-service/";
-const BUNNY_CDN_API_KEY = "e68740b8-e7b2-4df2-82b616b8ab35-77e2-42d6";
+require("dotenv").config();
+
+const BUNNY_CDN_URL = process.env.BUNNY_STORAGE_URL || "https://sg.storage.bunnycdn.com/live-stream-service/";
+const BUNNY_CDN_API_KEY = process.env.BUNNYCDN_STORAGE_PASSWORD || "e68740b8-e7b2-4df2-82b616b8ab35-77e2-42d6";
 const axios = require("axios");
 
 const uploadToBunnyCDN = async (filePath, fileName, userFolder) => {
@@ -195,43 +197,43 @@ const saveStreamToBunny = async (userFolder) => {
 };
 
 class StreamController {
-    async getCategories(req, res) {
-        try {
-            const token = req.userId;
-    
-            const categories = await getStreamsByCategory(token);
-    
-            res.status(200).json({ data: categories, message: 'Success' });
-        } catch (error) {
-            console.error('Error in getCate:', error.message);
-            res.status(500).json({ error: error.message });
-        }
+  async getCategories(req, res) {
+    try {
+      const token = req.userId;
+
+      const categories = await getStreamsByCategory(token);
+
+      res.status(200).json({ data: categories, message: 'Success' });
+    } catch (error) {
+      console.error('Error in getCate:', error.message);
+      res.status(500).json({ error: error.message });
     }
+  }
 
-    async likeStream(req, res) {
-        try {
+  async likeStream(req, res) {
+    try {
 
-            const { streamId, action, email } = req.body;
+      const { streamId, action, email } = req.body;
 
-            const likeStream = await likeStreamService(streamId, action, email);
+      const likeStream = await likeStreamService(streamId, action, email);
 
-            res.status(201).json({ like: likeStream, message: "CreateStream success" });
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    };
+      res.status(201).json({ like: likeStream, message: "CreateStream success" });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
 
-    async getStreamUrl (req, res) {
-        const { streamId } = req.params;
+  async getStreamUrl(req, res) {
+    const { streamId } = req.params;
 
-        try {
-            const streamUrl = await getStreamUrl(streamId);
+    try {
+      const streamUrl = await getStreamUrl(streamId);
 
-            res.status(200).json({ data: streamUrl, message: 'Success' });
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    };
+      res.status(200).json({ data: streamUrl, message: 'Success' });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
 
   // get a stream
   async getStream(req, res) {
@@ -250,24 +252,24 @@ class StreamController {
     try {
       const streams = await findAllStreams();
 
-            res.status(200).json({ data: streams, message: "Success" });
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    };
+      res.status(200).json({ data: streams, message: "Success" });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
 
-    async saveStream(req, res) {
-        const { streamId } = req.params;
-        const userId = req.userId
-    
-        try {
-            await saveStream(streamId, userId);
+  async saveStream(req, res) {
+    const { streamId } = req.params;
+    const userId = req.userId
 
-            return res.status(200).json({ message: 'Stream saved successfully' });
-        } catch (error) {
-            return res.status(500).json({ error: error.message });
-        }
-    };
+    try {
+      await saveStream(streamId, userId);
+
+      return res.status(200).json({ message: 'Stream saved successfully' });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  };
 
   // create a stream
   async startStream(req, res) {
@@ -313,9 +315,9 @@ class StreamController {
     }
   }
 
-    // end a stream
-    async endStream(req, res) {
-        const { streamId } = req.params;
+  // end a stream
+  async endStream(req, res) {
+    const { streamId } = req.params;
 
     try {
       const stream = await endStream(streamId);
