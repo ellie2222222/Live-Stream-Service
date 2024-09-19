@@ -1,5 +1,5 @@
 const { findUser, updateUserProfile, deactivateUser, findAllUsers } = require("../services/UserService");
-const { uploadToBunny, deleteFromBunny} = require('../middlewares/uploadToBunny');
+const { uploadToBunny, deleteFromBunny } = require('../middlewares/UploadToBunny');
 
 class UserController {
     // get a user
@@ -28,7 +28,7 @@ class UserController {
 
     // update a user
     async updateUser(req, res) {
-        const { name, bio, isActive} = req.body;
+        const { name, bio, isActive } = req.body;
         const img = req.file ? req.file : null;
         const userId = req.userId;
 
@@ -40,7 +40,7 @@ class UserController {
 
             let newAvatarUrl = currentAvatarUrl;
 
-            if(img) {
+            if (img) {
                 if (currentAvatarUrl) {
                     await deleteFromBunny(currentAvatarUrl);
                 }
@@ -48,13 +48,13 @@ class UserController {
                 console.log('New Avatar URL:', newAvatarUrl);
             }
 
-            const updateData = { 
-                name, 
-                bio, 
-                avatarUrl: newAvatarUrl, 
-                isActive 
+            const updateData = {
+                name,
+                bio,
+                avatarUrl: newAvatarUrl,
+                isActive
             };
-            
+
             const updatedUser = await updateUserProfile(userId, updateData);
             res.status(200).json({ data: updatedUser, message: "Success" });
         } catch (error) {
@@ -62,9 +62,9 @@ class UserController {
         }
     };
 
-     // update a user
-     async updateUser(req, res) {
-        const { name, bio, isActive} = req.body;
+    // update a user
+    async updateUser(req, res) {
+        const { name, bio, isActive } = req.body;
         const img = req.file ? req.file : null;
         const userId = req.userId;
 
@@ -76,7 +76,7 @@ class UserController {
 
             let newAvatarUrl = currentAvatarUrl;
 
-            if(img) {
+            if (img) {
                 if (currentAvatarUrl) {
                     await deleteFromBunny(currentAvatarUrl);
                 }
@@ -84,13 +84,13 @@ class UserController {
                 console.log('New Avatar URL:', newAvatarUrl);
             }
 
-            const updateData = { 
-                name, 
-                bio, 
-                avatarUrl: newAvatarUrl, 
-                isActive 
+            const updateData = {
+                name,
+                bio,
+                avatarUrl: newAvatarUrl,
+                isActive
             };
-            
+
             const updatedUser = await updateUserProfile(userId, updateData);
             res.status(200).json({ data: updatedUser, message: "Success" });
         } catch (error) {

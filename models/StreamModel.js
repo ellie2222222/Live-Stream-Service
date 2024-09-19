@@ -1,26 +1,38 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
-const Schema = mongoose.Schema
+const Schema = mongoose.Schema;
 
-const streamSchema = new Schema( {
+const streamSchema = new Schema(
+  {
     title: {
-        type: String,
-        required: true,
-        default: '',
+      type: String,
+      required: true,
+      minlength: [1, "Title must be at least 1 character long"],
+      maxlength: [100, "Title cannot exceed 100 characters"],
+      default: "",
     },
     thumbnailUrl: {
-        type: String,
-        required: true,
-        unique: true
+      type: String,
+      required: true,
+      unique: true,
     },
-    isDeleted: {
-        type: Boolean,
-        required: true,
-        default: false,
+    userId: {
+      type: mongoose.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    endedAt: {
+      type: Date,
+      default: null,
     },
     currentViewCount: {
-        type: Number,
-        default: 0,
+      type: Number,
+      default: 0,
+    },
+    isDeleted: {
+      type: Boolean,
+      required: true,
+      default: false,
     },
     likes: [
       {
@@ -29,10 +41,10 @@ const streamSchema = new Schema( {
     ],
     categories: [
       {
-      type: String,
-      required: true,
+        type: String,
+        required: true,
       },
     ],
-}, {timestamps: true})
+  }, { timestamps: true })
 
-module.exports = mongoose.model('Stream', streamSchema);
+module.exports = mongoose.model("Stream", streamSchema);
