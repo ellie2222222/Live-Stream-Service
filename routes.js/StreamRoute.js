@@ -16,7 +16,9 @@ streamRoutes.post(
   streamController.startStream
 );
 
-streamRoutes.post("/streams/end", AuthMiddleware, streamController.endStream);
+streamRoutes.post('/streams/end/:streamId', AuthMiddleware, streamController.endStream);
+
+streamRoutes.post('/streams/save/:streamId', AuthMiddleware, streamController.saveStream);
 
 streamRoutes.post(
   "streams/:streamId/:userId/dislike",
@@ -40,10 +42,10 @@ streamRoutes.get(
   streamController.getStream
 );
 
-streamRoutes.patch(
-  "/streams/:streamId",
-  AuthMiddleware,
-  streamController.updateStream
-);
+streamRoutes.patch('/streams/:streamId', AuthMiddleware, streamController.updateStream);
+
+streamRoutes.get('/streams/stream-url/:streamId', AuthMiddleware, streamController.getStreamUrl);
+
+streamRoutes.get('/streams/categories', AuthMiddleware, streamController.getCategories);
 
 module.exports = streamRoutes;

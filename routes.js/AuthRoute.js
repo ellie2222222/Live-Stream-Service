@@ -1,19 +1,11 @@
-const express = require("express");
-const AuthController = require("../controllers/AuthController");
+const express = require('express')
+const AuthController = require('../controllers/AuthController');
 const authController = new AuthController();
 const authRoutes = express.Router();
-const multer = require("multer");
-const upload = multer({
-  dest: "uploads/",
-});
-authRoutes.post("/auth/login", authController.loginUser);
+const upload = require('../middlewares/UploadConfig');
 
-authRoutes.post(
-  "/auth/signup",
-  upload.single("avatar"),
-  authController.signupUser
-);
+authRoutes.post('/auth/login', authController.loginUser);
 
-authRoutes.post("/logout", () => {});
+authRoutes.post('/auth/signup', upload.single('img'), authController.signupUser);
 
 module.exports = authRoutes;

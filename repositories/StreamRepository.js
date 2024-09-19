@@ -11,14 +11,17 @@ class StreamRepository {
     }
   }
 
-  // End a stream by setting the endedAt field
-  async endStream(streamId, session) {
-    try {
-      const stream = await Stream.findByIdAndUpdate(
-        streamId,
-        { endedAt: new Date() },
-        { new: true, runValidators: true, session }
-      );
+    // End a stream by setting the endedAt field
+    async endStream(streamId, session) {
+        try {
+            const stream = await Stream.findByIdAndUpdate(
+                streamId, 
+                { 
+                    endedAt: new Date(),
+                    streamUrl: '',
+                },
+                { new: true, runValidators: true, session }
+            );
 
       if (!stream) {
         throw new Error(`Stream with ID ${streamId} not found`);

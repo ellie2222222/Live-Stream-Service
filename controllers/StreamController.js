@@ -195,17 +195,43 @@ const saveStreamToBunny = async (userFolder) => {
 };
 
 class StreamController {
-  async getUrlStream(req, res) {
-    try {
-      const { email } = req.body;
-
-      const url = await getUrlStream(email);
-
-      res.status(200).json({ url, message: "Access granted to live stream" });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+    async getCategories(req, res) {
+        try {
+            const token = req.userId;
+    
+            const categories = await getStreamsByCategory(token);
+    
+            res.status(200).json({ data: categories, message: 'Success' });
+        } catch (error) {
+            console.error('Error in getCate:', error.message);
+            res.status(500).json({ error: error.message });
+        }
     }
-  }
+
+    async likeStream(req, res) {
+        try {
+
+            const { streamId, action, email } = req.body;
+
+            const likeStream = await likeStreamService(streamId, action, email);
+
+            res.status(201).json({ like: likeStream, message: "CreateStream success" });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    };
+
+    async getStreamUrl (req, res) {
+        const { streamId } = req.params;
+
+        try {
+            const streamUrl = await getStreamUrl(streamId);
+
+            res.status(200).json({ data: streamUrl, message: 'Success' });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    };
 
   // get a stream
   async getStream(req, res) {
@@ -224,11 +250,24 @@ class StreamController {
     try {
       const streams = await findAllStreams();
 
-      res.status(200).json({ data: streams, message: "Success" });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+            res.status(200).json({ data: streams, message: "Success" });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    };
+
+    async saveStream(req, res) {
+        const { streamId } = req.params;
+        const userId = req.userId
+    
+        try {
+            await saveStream(streamId, userId);
+
+            return res.status(200).json({ message: 'Stream saved successfully' });
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    };
 
   // create a stream
   async startStream(req, res) {
@@ -274,9 +313,9 @@ class StreamController {
     }
   }
 
-  // end a stream
-  async endStream(req, res) {
-    const { streamId } = req.body;
+    // end a stream
+    async endStream(req, res) {
+        const { streamId } = req.params;
 
     try {
       const stream = await endStream(streamId);
