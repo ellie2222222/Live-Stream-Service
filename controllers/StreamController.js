@@ -4,7 +4,6 @@ const {
     endStream,
     findStream,
     findAllStreams,
-    getUrlStream,
     dislikeByUserService,
     likeByUserService,
     createAStreamService,
@@ -18,9 +17,7 @@ const {
   class StreamController {
     async getCategories(req, res) {
       try {
-        const token = req.userId;
-  
-        const categories = await getStreamsByCategory(token);
+        const categories = null;
   
         res.status(200).json({ data: categories, message: 'Success' });
       } catch (error) {
@@ -68,8 +65,15 @@ const {
   
     // get all streams
     async getStreams(req, res) {
+      const { isStreaming } = req.query;
+      const query = {};
+      
+      if (isStreaming) {
+        query.endedAt = isStreaming === 'true' ? "" : { $ne: "" };
+      }      
+      
       try {
-        const streams = await findAllStreams();
+        const streams = await findAllStreams(query);
   
         res.status(200).json({ data: streams, message: "Success" });
       } catch (error) {
@@ -92,7 +96,7 @@ const {
   
     // create a stream
     async startStream(req, res) {
-      const { title, description, categories, userId } = req.body;
+      const { title, description, categories, userId, email } = req.body;
       const thumbnailFile = req.file;
       let thumbnailUrl = "";
       if (!thumbnailFile) {
@@ -114,8 +118,11 @@ const {
         );
         fs.unlinkSync(thumbnailFile.path);
   
+        const bunnyStorageCdn = process.env.BUNNY_STORAGE_CDN || "live-stream-service.b-cdn.net";
+
         console.log("File uploaded successfully:", bunnyCdnResponse.data);
-        thumbnailUrl = `https://live-stream-service.b-cdn.net/${uniqueName}`;
+        thumbnailUrl = `https://${bunnyStorageCdn}/${uniqueName}`;
+        streamUrl = `https://${bunnyStorageCdn}/video/${email}/stream-result-${email}.m3u8`;
       } catch (error) {
         res.status(500).json({ error: error.message });
       }

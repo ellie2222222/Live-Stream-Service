@@ -1,34 +1,7 @@
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
-const validator = require("validator");
 const DatabaseTransaction = require('../repositories/DatabaseTransaction');
-const UserRepository = require("../repositories/UserRepository");
 const https = require("https");
-const { resolve } = require("path");
-const { rejects } = require("assert");
-const jwt = require("jsonwebtoken");
-
-const getStreamsByCategory = async (token) => {
-  try {
-    const connection = new DatabaseTransaction();
-
-    const streams = await connection.streamRepository.findStreamsByToken(token);
-
-    // Lấy ra danh sách các danh mục duy nhất
-    const categories = [...new Set(streams.map(stream => stream.categories).flat())];
-
-    // Gom nhóm stream theo từng danh mục
-    const categorizedStreams = categories.reduce((acc, category) => {
-      acc[category] = streams.filter(stream => stream.categories.includes(category));
-      return acc;
-    }, {});
-
-    return categorizedStreams;
-  } catch (error) {
-    console.error('Error in getStreamsByCategory:', error.message);
-    throw new Error(`Error getting streams by category: ${error.message}`);
-  }
-};
 
 const getStreamUrl = async (streamId) => {
   try {
@@ -58,11 +31,11 @@ const findStream = async (streamId) => {
   }
 };
 
-const findAllStreams = async () => {
+const findAllStreams = async (query) => {
   try {
     const connection = new DatabaseTransaction();
 
-    const streams = await connection.streamRepository.getAllStreams();
+    const streams = await connection.streamRepository.getAllStreams(query);
 
     return streams;
   } catch (error) {
@@ -163,7 +136,8 @@ const createAStreamService = async (
   title,
   description,
   categories,
-  thumbnailUrl
+  thumbnailUrl,
+  streamUrl,
 ) => {
   try {
     const connection = new DatabaseTransaction();
@@ -173,10 +147,11 @@ const createAStreamService = async (
       description,
       categories,
       thumbnailUrl,
+      streamUrl,
     });
     return result;
   } catch (error) {
-    console.log(error);
+    throw new Error(error.message)
   }
 };
 
@@ -375,5 +350,4 @@ module.exports = {
   dislikeByUserService,
   likeByUserService,
   createAStreamService,
-  getStreamsByCategory,
 };
