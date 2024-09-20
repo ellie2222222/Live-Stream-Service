@@ -87,10 +87,12 @@ class StreamRepository {
   }
 
   // Get all streams
-  async getAllStreams() {
+  async getAllStreams(query) {
     try {
-      const streams = await Stream.find({ isDeleted: false });
-
+      const filters = { isDeleted: false, ...query };
+  
+      const streams = await Stream.find(filters);
+  
       return streams;
     } catch (error) {
       throw new Error(`Error fetching streams: ${error.message}`);

@@ -1,5 +1,5 @@
 const { findUser, updateUserProfile, deactivateUser, findAllUsers } = require("../services/UserService");
-const { uploadToBunny, deleteFromBunny } = require('../middlewares/uploadToBunny');
+const { uploadToBunny, deleteFromBunny } = require('../middlewares/UploadToBunny');
 
 class UserController {
     // get a user

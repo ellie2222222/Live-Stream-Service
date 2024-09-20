@@ -52,7 +52,7 @@ io.on("connection", (socket) => {
     await createAMessageService(userId, roomId, message.text);
     const user = await findUser(userId);
     io.to(roomId).emit("new_message", {
-      sender: user.username,
+      sender: user.name,
       text: message.text,
     });
   });
@@ -94,13 +94,12 @@ app.use("/api", userRoutes);
 app.use("/api", streamRoutes);
 app.use("/api", messageRoutes);
 
-// log api requests
+// Log API requests
 app.use((req, res, next) => {
   console.log(req.path, req.method);
   next();
 });
 
-// Node Media Server configuration
 const config = {
   rtmp: {
     port: 1935,
@@ -108,42 +107,40 @@ const config = {
     gop_cache: true,
     ping: 60,
     ping_timeout: 30,
-    allow_origin: '*',
+allow_origin: "*",
   },
   http: {
     port: 8000,
-    mediaroot: './output',
-    allow_origin: '*',
+    mediaroot: "./output",
+    allow_origin: "*",
   },
 };
 
-// Create an instance of the media server
 const nms = new NodeMediaServer(config);
 
 // Handle the 'postPublish' event to start saving the stream once it's live
-nms.on('postPublish', async (_, streamPath, _params) => {
-  const streamKey = streamPath.split('/').pop();
+nms.on("postPublish", async (_, streamPath, _params) => {
+  const streamKey = streamPath.split("/").pop();
 
   try {
     await saveStreamToBunny(streamKey);
   } catch (error) {
-    console.error(`Failed to save stream for key '${streamKey}': ${error.message}`);
+    console.error(
+      `Failed to save stream for key '${streamKey}': ${error.message}`
+    );
   }
 });
-
 
 // Start the media server
 nms.run();
 
-// start express server
+// Start server
 const port = process.env.DEVELOPMENT_PORT || 4000;
-
-app.listen(port, (err) => {
+server.listen(port, (err) => {
   if (err) {
     console.error("Failed to start server:", err);
     process.exit(1);
   } else {
     console.log(`Server started! Listening on port ${port}`);
-    console.log(`Streaming server running on port ${config.http.port}`);
   }
 });

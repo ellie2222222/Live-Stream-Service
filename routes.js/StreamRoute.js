@@ -2,10 +2,8 @@ const express = require("express");
 const StreamController = require("../controllers/StreamController");
 const AuthMiddleware = require("../middlewares/AuthMiddleware");
 const streamController = new StreamController();
-const multer = require("multer");
-const upload = multer({
-  dest: "uploads/",
-});
+const upload = require('../middlewares/UploadConfig');
+
 const streamRoutes = express.Router();
 
 streamRoutes.get("/streams/", AuthMiddleware, streamController.getStreams);

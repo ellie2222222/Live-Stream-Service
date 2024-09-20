@@ -2,33 +2,7 @@ const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const validator = require("validator");
 const DatabaseTransaction = require('../repositories/DatabaseTransaction');
-const UserRepository = require("../repositories/UserRepository");
 const https = require("https");
-const { resolve } = require("path");
-const { rejects } = require("assert");
-const jwt = require("jsonwebtoken");
-
-const getStreamsByCategory = async (token) => {
-  try {
-    const connection = new DatabaseTransaction();
-
-    const streams = await connection.streamRepository.findStreamsByToken(token);
-
-    // Lấy ra danh sách các danh mục duy nhất
-    const categories = [...new Set(streams.map(stream => stream.categories).flat())];
-
-    // Gom nhóm stream theo từng danh mục
-    const categorizedStreams = categories.reduce((acc, category) => {
-      acc[category] = streams.filter(stream => stream.categories.includes(category));
-      return acc;
-    }, {});
-
-    return categorizedStreams;
-  } catch (error) {
-    console.error('Error in getStreamsByCategory:', error.message);
-    throw new Error(`Error getting streams by category: ${error.message}`);
-  }
-};
 
 const getStreamUrl = async (streamId) => {
   try {
@@ -58,11 +32,11 @@ const findStream = async (streamId) => {
   }
 };
 
-const findAllStreams = async () => {
+const findAllStreams = async (query) => {
   try {
     const connection = new DatabaseTransaction();
 
-    const streams = await connection.streamRepository.getAllStreams();
+    const streams = await connection.streamRepository.getAllStreams(query);
 
     return streams;
   } catch (error) {
@@ -113,16 +87,16 @@ const endStream = async (streamId) => {
       return res.status(400).json({ error: 'Invalid stream ID' });
     }
 
+    const stream = await connection.streamRepository.endStream(streamId);
+
     if (!stream) {
       throw new Error('Stream not found');
     }
 
     const user = await connection.userRepository.findUserById(stream.userId);
-    const userFolder = user.email; // Assuming the folder is named by the user's email
+    const userFolder = user.email;
 
     await deleteFromBunnyCDN(userFolder);
-
-    const stream = await connection.streamRepository.endStream(streamId);
 
     return stream;
   } catch (error) {
@@ -161,22 +135,23 @@ const likeByUserService = async (streamId, userId) => {
 const createAStreamService = async (
   userId,
   title,
-  description,
   categories,
-  thumbnailUrl
+  thumbnailUrl,
+  streamUrl,
 ) => {
   try {
     const connection = new DatabaseTransaction();
+    
     const result = await connection.streamRepository.createStream({
       userId,
       title,
-      description,
       categories,
       thumbnailUrl,
+      streamUrl,
     });
     return result;
   } catch (error) {
-    console.log(error);
+    throw new Error(error.message)
   }
 };
 
@@ -223,10 +198,17 @@ const uploadToBunnyCDN = async (filePath, fileName, userFolder) => {
 const deleteFromBunnyCDN = async (userFolder, fileName) => {
   const storageZone = process.env.BUNNYCDN_STORAGE_ZONE_NAME;
 
+  let path = "";
+  if (fileName) {
+    path = `/${storageZone}/video/${userFolder}/${fileName}`
+  } else {
+    path = `/${storageZone}/video/${userFolder}/`
+  }
+  
   const options = {
     method: 'DELETE',
     host: 'storage.bunnycdn.com',
-    path: `/${storageZone}/video/${userFolder}/${fileName}`,
+    path: path,
     headers: {
       AccessKey: process.env.BUNNYCDN_STORAGE_PASSWORD,
     },
@@ -375,5 +357,5 @@ module.exports = {
   dislikeByUserService,
   likeByUserService,
   createAStreamService,
-  getStreamsByCategory,
+  saveStreamToBunny,
 };

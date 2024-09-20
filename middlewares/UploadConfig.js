@@ -5,17 +5,13 @@ const uploadToBunny = require('./UploadToBunny');
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
-    if (file.fieldname === 'avatar') {
-        const filetypes = /\.(svg|jpg|jpeg|png)$/i;
-        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const filetypes = /\.(svg|jpg|jpeg|png|webp)$/i;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
 
-        if (extname) {
-            return cb(null, true);
-        } else {
-            cb(new Error('Only accept image file of type svg, jpg, jpeg, or png'));
-        }
+    if (extname) {
+        return cb(null, true);
     } else {
-        return cb(new Error('Unaccceptable file type'));
+        cb(new Error('Chỉ chấp nhận file ảnh svg, jpg, jpeg, hoặc png'));
     }
 };
 
