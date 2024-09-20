@@ -11,10 +11,11 @@ const streamSchema = new Schema(
       maxlength: [100, "Title cannot exceed 100 characters"],
       default: "",
     },
+    streamUrl: {
+      type: String,
+    },
     thumbnailUrl: {
       type: String,
-      required: true,
-      unique: true,
     },
     userId: {
       type: mongoose.Types.ObjectId,

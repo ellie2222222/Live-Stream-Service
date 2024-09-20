@@ -86,16 +86,16 @@ const endStream = async (streamId) => {
       return res.status(400).json({ error: 'Invalid stream ID' });
     }
 
+    const stream = await connection.streamRepository.endStream(streamId);
+
     if (!stream) {
       throw new Error('Stream not found');
     }
 
     const user = await connection.userRepository.findUserById(stream.userId);
-    const userFolder = user.email; // Assuming the folder is named by the user's email
+    const userFolder = user.email;
 
     await deleteFromBunnyCDN(userFolder);
-
-    const stream = await connection.streamRepository.endStream(streamId);
 
     return stream;
   } catch (error) {
@@ -134,17 +134,16 @@ const likeByUserService = async (streamId, userId) => {
 const createAStreamService = async (
   userId,
   title,
-  description,
   categories,
   thumbnailUrl,
   streamUrl,
 ) => {
   try {
     const connection = new DatabaseTransaction();
+    
     const result = await connection.streamRepository.createStream({
       userId,
       title,
-      description,
       categories,
       thumbnailUrl,
       streamUrl,
@@ -198,10 +197,17 @@ const uploadToBunnyCDN = async (filePath, fileName, userFolder) => {
 const deleteFromBunnyCDN = async (userFolder, fileName) => {
   const storageZone = process.env.BUNNYCDN_STORAGE_ZONE_NAME;
 
+  let path = "";
+  if (fileName) {
+    path = `/${storageZone}/video/${userFolder}/${fileName}`
+  } else {
+    path = `/${storageZone}/video/${userFolder}/`
+  }
+  
   const options = {
     method: 'DELETE',
     host: 'storage.bunnycdn.com',
-    path: `/${storageZone}/video/${userFolder}/${fileName}`,
+    path: path,
     headers: {
       AccessKey: process.env.BUNNYCDN_STORAGE_PASSWORD,
     },
@@ -350,4 +356,5 @@ module.exports = {
   dislikeByUserService,
   likeByUserService,
   createAStreamService,
+  saveStreamToBunny,
 };

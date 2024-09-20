@@ -12,7 +12,8 @@ const uploadToBunny = async (file) => {
         const fileStream = new stream.PassThrough();
         fileStream.end(file.buffer);
 
-        const fileName = file.originalname;
+        const timestamp = Date.now();
+        const fileName = `${timestamp}-${file.originalname}`; 
 
         // Tạo URL tải lên
         const uploadUrl = `https://${storageUrl}/${zoneName}/${fileName}`;
