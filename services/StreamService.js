@@ -31,11 +31,14 @@ const findStream = async (streamId) => {
   }
 };
 
-const findAllStreams = async (query) => {
+const findAllStreams = async (page, query) => {
   try {
     const connection = new DatabaseTransaction();
 
-    const streams = await connection.streamRepository.getAllStreams(query);
+    const pageSize=6;
+    const pageNumber = page || 1;
+
+    const streams = await connection.streamRepository.getAllStreams(pageSize, pageNumber, query);
 
     return streams;
   } catch (error) {

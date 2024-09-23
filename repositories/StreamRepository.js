@@ -87,13 +87,19 @@ class StreamRepository {
   }
 
   // Get all streams
-  async getAllStreams(query) {
+  async getAllStreams(pageSize, pageNumber, query) {
     try {
       const filters = { isDeleted: false, ...query };
-  
-      const streams = await Stream.find(filters);
-  
-      return streams;
+
+      const streams = await Stream.find(filters)
+        .skip(pageSize * (pageNumber - 1))
+        .limit(pageSize);
+
+      const totalStreams = await Stream.countDocuments(filters);
+      console.log(`Total streams: ${totalStreams}`);
+      const totalPages = Math.ceil(totalStreams / pageSize);
+      
+      return { streams, totalPages };
     } catch (error) {
       throw new Error(`Error fetching streams: ${error.message}`);
     }
