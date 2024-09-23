@@ -97,7 +97,7 @@ class StreamRepository {
 
       const totalStreams = await Stream.countDocuments(filters);
       const totalPages = Math.ceil(totalStreams / pageSize);
-      
+
       return { streams, totalPages };
     } catch (error) {
       throw new Error(`Error fetching streams: ${error.message}`);
@@ -147,7 +147,7 @@ class StreamRepository {
   async getStreamsByCategory(category, page = 1, itemsPerPage = 10) {
     const skip = (page - 1) * itemsPerPage;
     try {
-      const streams = await Stream.find({ categories: category })
+      const streams = await Stream.find({ categories: category, endedAt: null }) //get on going stream
         .skip(skip)
         .limit(itemsPerPage);
 
