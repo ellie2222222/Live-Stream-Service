@@ -368,13 +368,16 @@ const saveStream = async (streamId, userId) => {
   }
 };
 
-const getStreamByCategory = async (category) => {
+const getStreamByCategory = async (category, page = 1, itemsPerPage = 10) => {
   try {
     const connection = new DatabaseTransaction();
-    const streams = await connection.streamRepository.getStreamsByCategory(
-      category
-    );
-    return streams;
+    const { streams, totalStreams } =
+      await connection.streamRepository.getStreamsByCategory(
+        category,
+        page,
+        itemsPerPage
+      );
+    return { streams, totalStreams };
   } catch (error) {
     throw new Error(error.message);
   }

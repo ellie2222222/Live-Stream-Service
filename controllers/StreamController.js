@@ -208,15 +208,36 @@ class StreamController {
 
   async getStreamByCategory(req, res) {
     try {
-      const { category } = req.params;
-      console.log(category);
-      const streams = await getStreamByCategory(category);
-      if (streams.length == 0) {
+      const { category, page = 1 } = req.params;
+      const itemsPerPage = 10; // Can be customizable, or retrieve it from query params.
+      const pageNum = parseInt(page, 10);
+
+      if (isNaN(pageNum) || pageNum <= 0) {
+        return res.status(400).json({ message: "Invalid page number" });
+      }
+
+      // Call service method with pagination parameters
+      const { streams, totalStreams } = await getStreamByCategory(
+        category,
+        pageNum,
+        itemsPerPage
+      );
+
+      if (!streams.length) {
         return res
           .status(404)
-          .json({ message: `No stream for category: ${category}` });
+          .json({ message: `No streams found for category: ${category}` });
       }
-      res.status(200).json({ data: streams.slice(0, 10), message: "Success" });
+
+      const totalPages = Math.ceil(totalStreams / itemsPerPage);
+
+      res.status(200).json({
+        data: streams,
+        message: "Success",
+        page: pageNum,
+        totalItems: totalStreams,
+        totalPages,
+      });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

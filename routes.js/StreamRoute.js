@@ -67,7 +67,7 @@ streamRoutes.get(
 );
 
 streamRoutes.get(
-  "/streams/category/:category",
+  "/streams/category/:category/:page",
   AuthMiddleware,
   streamController.getStreamByCategory
 );

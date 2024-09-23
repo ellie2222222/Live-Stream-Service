@@ -5,7 +5,7 @@ const DatabaseTransaction = require("../repositories/DatabaseTransaction");
 const { uploadToBunny } = require("../middlewares/UploadToBunny");
 
 // Sign up a new user
-const signup = async (username, email, password, bio, img) => {
+const signup = async (name, email, password, bio, img) => {
   try {
     const connection = new DatabaseTransaction();
 
@@ -39,7 +39,7 @@ const signup = async (username, email, password, bio, img) => {
     }
 
     const user = await connection.userRepository.createUser({
-      name: username,
+      name,
       email,
       password: hashedPassword,
       bio,
