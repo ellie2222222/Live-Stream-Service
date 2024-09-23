@@ -2,51 +2,58 @@ const bcrypt = require("bcrypt");
 const validator = require("validator");
 const mongoose = require("mongoose");
 const DatabaseTransaction = require("../repositories/DatabaseTransaction");
-const { uploadToBunny } = require("../middlewares/UploadToBunny");
+const {
+  uploadToBunny,
+  deleteFromBunny,
+} = require("../middlewares/UploadToBunny");
 
 // Sign up a new user
-const signup = async (name, email, password, bio, avatar) => {
+const signup = async (name, email, password, bio, img) => {
+  let avatarUrl = null;
+
   try {
-      const connection = new DatabaseTransaction();
+    const connection = new DatabaseTransaction();
 
-      if (!validator.isEmail(email)) {
-          throw new Error('Invalid email address');
-      }
+    if (!validator.isEmail(email)) {
+      throw new Error("Invalid email address");
+    }
 
-      if (!validator.isStrongPassword(password, {
-          minLength: 8,
-          minLowercase: 1,
-          minUppercase: 1,
-          minNumbers: 1,
-          minSymbols: 1
-      })) {
-          throw new Error('Password is not strong enough');
-      }
+    if (
+      !validator.isStrongPassword(password, {
+        minLength: 8,
+        minLowercase: 1,
+        minUppercase: 1,
+        minNumbers: 1,
+        minSymbols: 1,
+      })
+    ) {
+      throw new Error("Password is not strong enough");
+    }
 
-      const existingUser = await connection.userRepository.findUserByEmail(email);
-      if (existingUser) {
-          throw new Error('Email is already in use');
-      }
+    const existingUser = await connection.userRepository.findUserByEmail(email);
+    if (existingUser) {
+      throw new Error("Email is already in use");
+    }
 
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-      let avatarUrl = null;
-      if (avatar) {
-          avatarUrl = await uploadToBunny(avatar);
-      }
-      
-      const user = await connection.userRepository.createUser({
-          name,
-          email,
-          password: hashedPassword,
-          bio, 
-          avatarUrl,
-      });
+    if (img) {
+      avatarUrl = await uploadToBunny(img);
+    }
 
-      return user;
+    const user = await connection.userRepository.createUser({
+      name,
+      email,
+      password: hashedPassword,
+      bio,
+      avatarUrl,
+    });
+
+    return user;
   } catch (error) {
-      throw new Error(error.message);
+    await deleteFromBunny(avatarUrl);
+    throw new Error(error.message);
   }
 };
 

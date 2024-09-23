@@ -1,4 +1,4 @@
-const { uploadToBunny } = require("../middlewares/UploadToBunny");
+const { uploadToBunny, deleteFromBunny } = require("../middlewares/UploadToBunny");
 const { login, signup } = require("../services/UserService");
 const createAccessToken = require("../utils/createAccessToken");
 require("dotenv").config();
@@ -28,9 +28,7 @@ class AuthController {
     }
 
     try {
-      const avatarUrl = await uploadToBunny(avatarFile);
-
-      const user = await signup(name, email, password, bio, avatarUrl);
+      const user = await signup(name, email, password, bio, avatarFile);
 
       res.status(201).json({ message: "Signup success" });
     } catch (error) {
