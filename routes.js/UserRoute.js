@@ -6,7 +6,7 @@ const upload = require('../middlewares/UploadConfig');
 
 const userRoutes = express.Router();
 
-userRoutes.get("/users/", AuthMiddleware, userController.getUsers);
+userRoutes.get("/users/", AuthMiddleware, userController.getUser);
 
 userRoutes.patch("/users/:userId", AuthMiddleware, upload.single('avatar'), userController.updateUser);
 

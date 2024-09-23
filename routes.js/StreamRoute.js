@@ -6,6 +6,9 @@ const upload = require('../middlewares/UploadConfig');
 
 const streamRoutes = express.Router();
 
+streamRoutes.get('/streams/categories', AuthMiddleware, streamController.getCategories);
+
+
 streamRoutes.get("/streams/", AuthMiddleware, streamController.getStreams);
 
 streamRoutes.post(
@@ -43,7 +46,5 @@ streamRoutes.get(
 streamRoutes.patch('/streams/:streamId', AuthMiddleware, streamController.updateStream);
 
 streamRoutes.get('/streams/stream-url/:streamId', AuthMiddleware, streamController.getStreamUrl);
-
-streamRoutes.get('/streams/categories', AuthMiddleware, streamController.getCategories);
 
 module.exports = streamRoutes;
