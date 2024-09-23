@@ -147,17 +147,15 @@ class StreamRepository {
   async getStreamsByCategory(category, page = 1, itemsPerPage = 10) {
     const skip = (page - 1) * itemsPerPage;
     try {
-      const streams = await Stream.find({ categories: category, endedAt: null }) //get on going stream
-        .skip(skip)
-        .limit(itemsPerPage);
+      const filter = { categories: category, endedAt: null }; // Filter for ongoing streams only
 
-      const totalStreams = await Stream.countDocuments({
-        categories: category,
-      });
+      const streams = await Stream.find(filter).skip(skip).limit(itemsPerPage);
+
+      const totalStreams = await Stream.countDocuments(filter);
 
       return { streams, totalStreams };
     } catch (error) {
-      throw new Error(`Error getting stream by category ${error.message}`);
+      throw new Error(`Error getting streams by category: ${error.message}`);
     }
   }
 }
