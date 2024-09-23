@@ -48,12 +48,13 @@ io.on("connection", (socket) => {
 
   socket.on("send_message", async (data) => {
     const { roomId, message, userId } = data;
-    console.log(data);
+
     await createAMessageService(userId, roomId, message.text);
     const user = await findUser(userId);
     io.to(roomId).emit("new_message", {
       sender: user.name,
       text: message.text,
+      avatar: user.avatarUrl,
     });
   });
 
@@ -107,7 +108,7 @@ const config = {
     gop_cache: true,
     ping: 60,
     ping_timeout: 30,
-allow_origin: "*",
+    allow_origin: "*",
   },
   http: {
     port: 8000,

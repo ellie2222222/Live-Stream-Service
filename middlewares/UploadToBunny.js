@@ -3,6 +3,8 @@ const stream = require("stream");
 require("dotenv").config();
 
 const uploadToBunny = async (file) => {
+  console.log("meomeo");
+
   try {
     const zoneName = process.env.BUNNYCDN_STORAGE_ZONE_NAME;
     const password = process.env.BUNNYCDN_STORAGE_PASSWORD;
@@ -11,11 +13,11 @@ const uploadToBunny = async (file) => {
 
     const fileStream = new stream.PassThrough();
     fileStream.end(file.buffer);
-
     const timestamp = Date.now();
     const fileName = `${timestamp}-${file.originalname}`;
 
     const uploadUrl = `https://${storageUrl}/${zoneName}/${fileName}`;
+    console.log(uploadUrl);
 
     // Thực hiện yêu cầu tải lên
     const response = await axios.put(uploadUrl, fileStream, {

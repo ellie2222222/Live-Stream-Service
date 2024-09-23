@@ -10,7 +10,6 @@ const {
 // Sign up a new user
 const signup = async (name, email, password, bio, img) => {
   let avatarUrl = null;
-
   try {
     const connection = new DatabaseTransaction();
 

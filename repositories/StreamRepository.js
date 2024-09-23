@@ -11,17 +11,17 @@ class StreamRepository {
     }
   }
 
-    // End a stream by setting the endedAt field
-    async endStream(streamId, session) {
-        try {
-            const stream = await Stream.findByIdAndUpdate(
-                streamId, 
-                { 
-                    endedAt: new Date(),
-                    streamUrl: '',
-                },
-                { new: true, runValidators: true, session }
-            );
+  // End a stream by setting the endedAt field
+  async endStream(streamId, session) {
+    try {
+      const stream = await Stream.findByIdAndUpdate(
+        streamId,
+        {
+          endedAt: new Date(),
+          streamUrl: "",
+        },
+        { new: true, runValidators: true, session }
+      );
 
       if (!stream) {
         throw new Error(`Stream with ID ${streamId} not found`);
@@ -90,9 +90,9 @@ class StreamRepository {
   async getAllStreams(query) {
     try {
       const filters = { isDeleted: false, ...query };
-  
+
       const streams = await Stream.find(filters);
-  
+
       return streams;
     } catch (error) {
       throw new Error(`Error fetching streams: ${error.message}`);
@@ -107,10 +107,7 @@ class StreamRepository {
         throw new Error("Stream not found");
       }
 
-      await Stream.updateOne(
-        { _id: streamId },
-        { $pull: { likeBy: userId } } // Use $pull to remove userId from likeBy array
-      );
+      await Stream.updateOne({ _id: streamId }, { $pull: { likeBy: userId } });
       console.log(`User ${userId} removed from likeBy of stream ${streamId}`);
       return true;
     } catch (error) {
@@ -127,10 +124,7 @@ class StreamRepository {
         throw new Error("Stream not found");
       }
 
-      await Stream.updateOne(
-        { _id: streamId },
-        { $addToSet: { likeBy: userId } }
-      );
+      await Stream.updateOne({ _id: streamId }, { $push: { likeBy: userId } });
 
       console.log(`User ${userId} added to likeBy of stream ${streamId}`);
       return true;
