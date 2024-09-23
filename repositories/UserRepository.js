@@ -12,7 +12,7 @@ class UserRepository {
     }
 
     // Update a user by ID
-    async updateUser(userId, updateData, session) {
+    async updateUser(userId, updateData) {
         try {
             const user = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true, session });
             

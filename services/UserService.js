@@ -3,6 +3,11 @@ const validator = require("validator");
 const mongoose = require("mongoose");
 const DatabaseTransaction = require("../repositories/DatabaseTransaction");
 const { uploadToBunny, deleteFromBunny } = require("../middlewares/UploadToBunny");
+const bcrypt = require("bcrypt");
+const validator = require("validator");
+const mongoose = require("mongoose");
+const DatabaseTransaction = require("../repositories/DatabaseTransaction");
+const { uploadToBunny, deleteFromBunny } = require("../middlewares/UploadToBunny");
 
 // Sign up a new user
 const signup = async (name, email, password, bio, img) => {
