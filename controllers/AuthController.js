@@ -20,17 +20,31 @@ class AuthController {
 
   // signup a user
   async signupUser(req, res) {
-    const { name, email, password, bio } = req.body;
+    const { username, email, password, bio } = req.body;
     const avatarFile = req.file;
 
     if (!avatarFile) {
       return res.status(400).send({ message: "Avatar file is required" });
     }
+    // console.log(
+    //   "name: ",
+    //   username,
+    //   " email: ",
+    //   email,
+    //   " password: ",
+    //   password,
+    //   " bio:",
+    //   bio
+    // );
+    // if (avatarFile) {
+    //   console.log("avatarFile found");
+    // }
+    //frontend sent username -> undefine name: fix name => username
 
     try {
       const avatarUrl = await uploadToBunny(avatarFile);
 
-      const user = await signup(name, email, password, bio, avatarUrl);
+      const user = await signup(username, email, password, bio, avatarUrl);
 
       res.status(201).json({ message: "Signup success" });
     } catch (error) {

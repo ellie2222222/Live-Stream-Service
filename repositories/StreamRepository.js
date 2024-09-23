@@ -11,17 +11,17 @@ class StreamRepository {
     }
   }
 
-    // End a stream by setting the endedAt field
-    async endStream(streamId, session) {
-        try {
-            const stream = await Stream.findByIdAndUpdate(
-                streamId, 
-                { 
-                    endedAt: new Date(),
-                    streamUrl: '',
-                },
-                { new: true, runValidators: true, session }
-            );
+  // End a stream by setting the endedAt field
+  async endStream(streamId, session) {
+    try {
+      const stream = await Stream.findByIdAndUpdate(
+        streamId,
+        {
+          endedAt: new Date(),
+          streamUrl: "",
+        },
+        { new: true, runValidators: true, session }
+      );
 
       if (!stream) {
         throw new Error(`Stream with ID ${streamId} not found`);
@@ -90,9 +90,9 @@ class StreamRepository {
   async getAllStreams(query) {
     try {
       const filters = { isDeleted: false, ...query };
-  
+
       const streams = await Stream.find(filters);
-  
+
       return streams;
     } catch (error) {
       throw new Error(`Error fetching streams: ${error.message}`);
@@ -137,6 +137,14 @@ class StreamRepository {
     } catch (error) {
       console.error("Error adding user to likeBy:", error);
       return false;
+    }
+  }
+  async getStreamsByCategory(category) {
+    try {
+      const streams = await Stream.find({ categories: category });
+      return streams;
+    } catch (error) {
+      throw new Error(`Error getting stream by category ${error.message}`);
     }
   }
 }

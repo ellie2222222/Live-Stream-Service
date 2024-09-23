@@ -1,6 +1,6 @@
-const bcrypt = require('bcrypt');
-const mongoose = require('mongoose');
-const DatabaseTransaction = require('../repositories/DatabaseTransaction');
+const bcrypt = require("bcrypt");
+const mongoose = require("mongoose");
+const DatabaseTransaction = require("../repositories/DatabaseTransaction");
 const https = require("https");
 
 const getStreamUrl = async (streamId) => {
@@ -13,7 +13,6 @@ const getStreamUrl = async (streamId) => {
     throw new Error(error.message);
   }
 };
-
 
 const findStream = async (streamId) => {
   try {
@@ -83,13 +82,13 @@ const endStream = async (streamId) => {
     const connection = new DatabaseTransaction();
 
     if (!mongoose.Types.ObjectId.isValid(streamId)) {
-      return res.status(400).json({ error: 'Invalid stream ID' });
+      return res.status(400).json({ error: "Invalid stream ID" });
     }
 
     const stream = await connection.streamRepository.endStream(streamId);
 
     if (!stream) {
-      throw new Error('Stream not found');
+      throw new Error("Stream not found");
     }
 
     const user = await connection.userRepository.findUserById(stream.userId);
@@ -114,7 +113,7 @@ const dislikeByUserService = async (streamId, userId) => {
       userId
     );
     return result;
-  } catch (error) { }
+  } catch (error) {}
 };
 
 const likeByUserService = async (streamId, userId) => {
@@ -128,7 +127,7 @@ const likeByUserService = async (streamId, userId) => {
       userId
     );
     return result;
-  } catch (error) { }
+  } catch (error) {}
 };
 
 const createAStreamService = async (
@@ -136,11 +135,11 @@ const createAStreamService = async (
   title,
   categories,
   thumbnailUrl,
-  streamUrl,
+  streamUrl
 ) => {
   try {
     const connection = new DatabaseTransaction();
-    
+
     const result = await connection.streamRepository.createStream({
       userId,
       title,
@@ -150,15 +149,15 @@ const createAStreamService = async (
     });
     return result;
   } catch (error) {
-    throw new Error(error.message)
+    throw new Error(error.message);
   }
 };
 
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
-const moment = require('moment');
-const ffmpeg = require('fluent-ffmpeg');
+const fs = require("fs");
+const path = require("path");
+const os = require("os");
+const moment = require("moment");
+const ffmpeg = require("fluent-ffmpeg");
 
 const outputDir = os.tmpdir();
 
@@ -168,25 +167,25 @@ const uploadToBunnyCDN = async (filePath, fileName, userFolder) => {
   const storageZone = process.env.BUNNYCDN_STORAGE_ZONE_NAME;
 
   const options = {
-    method: 'PUT',
-    host: 'storage.bunnycdn.com',
+    method: "PUT",
+    host: "storage.bunnycdn.com",
     path: `/${storageZone}/video/${userFolder}/${fileName}`,
     headers: {
       AccessKey: process.env.BUNNYCDN_STORAGE_PASSWORD,
-      'Content-Type': 'application/octet-stream',
-      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate', // Disable caching
-      'Expires': '0',
-      'Pragma': 'no-cache',
+      "Content-Type": "application/octet-stream",
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate", // Disable caching
+      Expires: "0",
+      Pragma: "no-cache",
     },
   };
 
   const req = https.request(options, (res) => {
-    res.on('data', (chunk) => {
-      console.log(chunk.toString('utf8'));
+    res.on("data", (chunk) => {
+      console.log(chunk.toString("utf8"));
     });
   });
 
-  req.on('error', (error) => {
+  req.on("error", (error) => {
     console.error(error);
   });
 
@@ -199,40 +198,44 @@ const deleteFromBunnyCDN = async (userFolder, fileName) => {
 
   let path = "";
   if (fileName) {
-    path = `/${storageZone}/video/${userFolder}/${fileName}`
+    path = `/${storageZone}/video/${userFolder}/${fileName}`;
   } else {
-    path = `/${storageZone}/video/${userFolder}/`
+    path = `/${storageZone}/video/${userFolder}/`;
   }
-  
+
   const options = {
-    method: 'DELETE',
-    host: 'storage.bunnycdn.com',
+    method: "DELETE",
+    host: "storage.bunnycdn.com",
     path: path,
     headers: {
       AccessKey: process.env.BUNNYCDN_STORAGE_PASSWORD,
     },
   };
-  console.log(options.path)
+  console.log(options.path);
 
   return new Promise((resolve, reject) => {
     const req = https.request(options, (res) => {
-      let responseBody = '';
-      res.on('data', (chunk) => {
+      let responseBody = "";
+      res.on("data", (chunk) => {
         responseBody += chunk.toString();
       });
-      res.on('end', () => {
+      res.on("end", () => {
         if (res.statusCode === 404) {
-          resolve('Folder not found');
+          resolve("Folder not found");
         } else if (res.statusCode === 200) {
           console.log(`Deleted folder ${userFolder}: ${responseBody}`);
           resolve(responseBody);
         } else {
-          reject(new Error(`Failed to delete folder ${userFolder}: ${res.statusCode}`));
+          reject(
+            new Error(
+              `Failed to delete folder ${userFolder}: ${res.statusCode}`
+            )
+          );
         }
       });
     });
 
-    req.on('error', (error) => {
+    req.on("error", (error) => {
       reject(error);
     });
 
@@ -242,8 +245,8 @@ const deleteFromBunnyCDN = async (userFolder, fileName) => {
 
 const purgeBunnyCDNCache = async () => {
   const options = {
-    method: 'POST',
-    host: 'api.bunny.net',
+    method: "POST",
+    host: "api.bunny.net",
     path: `/pullzone/${process.env.BUNNYCDN_PULLZONE_ID}/purgeCache`,
     headers: {
       AccessKey: process.env.BUNNYCDN_API_KEY,
@@ -251,12 +254,12 @@ const purgeBunnyCDNCache = async () => {
   };
 
   const req = https.request(options, (res) => {
-    res.on('data', (chunk) => {
-      console.log(chunk.toString('utf8'));
+    res.on("data", (chunk) => {
+      console.log(chunk.toString("utf8"));
     });
   });
 
-  req.on('error', (error) => {
+  req.on("error", (error) => {
     console.error(error);
   });
 
@@ -265,10 +268,13 @@ const purgeBunnyCDNCache = async () => {
 
 // Function to replace .ts file paths in .m3u8 with BunnyCDN URLs
 const replaceTsWithCDN = (m3u8FilePath, cdnUrl, mainFileName, userFolder) => {
-  let m3u8Content = fs.readFileSync(m3u8FilePath, 'utf8');
-  m3u8Content = m3u8Content.replace(new RegExp(`${mainFileName}-${userFolder}-segment-\\d{3}\\.ts`, 'g'), (match) => {
-    return `${cdnUrl}${match}`;
-  });
+  let m3u8Content = fs.readFileSync(m3u8FilePath, "utf8");
+  m3u8Content = m3u8Content.replace(
+    new RegExp(`${mainFileName}-${userFolder}-segment-\\d{3}\\.ts`, "g"),
+    (match) => {
+      return `${cdnUrl}${match}`;
+    }
+  );
   fs.writeFileSync(m3u8FilePath, m3u8Content);
 };
 
@@ -276,7 +282,11 @@ const replaceTsWithCDN = (m3u8FilePath, cdnUrl, mainFileName, userFolder) => {
 async function uploadTsFiles(mainFileName, userFolder) {
   const files = fs.readdirSync(outputDir);
   for (const file of files) {
-    if (file.endsWith('.ts') && file.includes(mainFileName) && file.includes(userFolder)) {
+    if (
+      file.endsWith(".ts") &&
+      file.includes(mainFileName) &&
+      file.includes(userFolder)
+    ) {
       const filePath = path.join(outputDir, file);
       const fileName = path.basename(file);
       await uploadToBunnyCDN(filePath, fileName, userFolder);
@@ -284,67 +294,91 @@ async function uploadTsFiles(mainFileName, userFolder) {
   }
 }
 
-let inputURL = 'rtmp://localhost:1935/live';
+let inputURL = "rtmp://localhost:1935/live";
 
 // Function to save the stream using FFmpeg
 const saveStreamToBunny = async (userFolder) => {
   const mainFileName = "stream-result";
   const outputFilename = `${outputDir}/${mainFileName}.m3u8`;
-  const hostName = process.env.BUNNYCDN_HOSTNAME || "live-stream-platform.b-cdn.net";
+  const hostName =
+    process.env.BUNNYCDN_HOSTNAME || "live-stream-platform.b-cdn.net";
   try {
     const connection = new DatabaseTransaction();
     const email = await connection.userRepository.findUserByEmail(userFolder);
     if (!email) {
-      throw new Error("Invalid key")
+      throw new Error("Invalid key");
     }
 
     inputStream = `${inputURL}/${userFolder}`;
 
     ffmpeg(inputStream)
-      .inputFormat('flv')
+      .inputFormat("flv")
       .outputOptions([
-        '-hls_time 15',
-        '-hls_list_size 0',
-        '-hls_flags delete_segments',
+        "-hls_time 15",
+        "-hls_list_size 0",
+        "-hls_flags delete_segments",
         `-hls_segment_filename ${outputDir}/${mainFileName}-${userFolder}-segment-%03d.ts`,
-        '-t 30',
-        '-f hls',
+        "-t 30",
+        "-f hls",
       ])
       .output(outputFilename)
-      .on('end', async () => {
-        replaceTsWithCDN(outputFilename, `https://${hostName}/video/${userFolder}/`, mainFileName, userFolder);
-        await deleteFromBunnyCDN(userFolder, `stream-result-${userFolder}.m3u8`);
-        await uploadToBunnyCDN(outputFilename, `stream-result-${userFolder}.m3u8`, userFolder);
+      .on("end", async () => {
+        replaceTsWithCDN(
+          outputFilename,
+          `https://${hostName}/video/${userFolder}/`,
+          mainFileName,
+          userFolder
+        );
+        await deleteFromBunnyCDN(
+          userFolder,
+          `stream-result-${userFolder}.m3u8`
+        );
+        await uploadToBunnyCDN(
+          outputFilename,
+          `stream-result-${userFolder}.m3u8`,
+          userFolder
+        );
         await uploadTsFiles(mainFileName, userFolder);
         await purgeBunnyCDNCache();
       })
-      .on('error', (err) => {
-        console.error('Error:', err);
+      .on("error", (err) => {
+        console.error("Error:", err);
       })
       .run();
   } catch (error) {
-    throw new Error(error.message)
+    throw new Error(error.message);
   }
-}
+};
 
 const saveStream = async (streamId, userId) => {
   if (!mongoose.Types.ObjectId.isValid(streamId)) {
-    return res.status(400).json({ error: 'Invalid stream ID' });
+    return res.status(400).json({ error: "Invalid stream ID" });
   }
 
   try {
     const connection = new DatabaseTransaction();
 
-    const user = await connection.userRepository.findUserById(userId)
+    const user = await connection.userRepository.findUserById(userId);
 
     await saveStreamToBunny(user.email);
 
     return true;
   } catch (error) {
-    throw new Error(error.message)
+    throw new Error(error.message);
   }
 };
 
+const getStreamByCategory = async (category) => {
+  try {
+    const connection = new DatabaseTransaction();
+    const streams = await connection.streamRepository.getStreamsByCategory(
+      category
+    );
+    return streams;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 module.exports = {
   findStream,
   findAllStreams,
@@ -357,4 +391,5 @@ module.exports = {
   likeByUserService,
   createAStreamService,
   saveStreamToBunny,
+  getStreamByCategory,
 };

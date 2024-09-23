@@ -9,6 +9,7 @@ const { createAMessageService } = require("./services/MessageService");
 const { findUser } = require("./services/UserService");
 
 // Initialize application and server
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
@@ -107,7 +108,7 @@ const config = {
     gop_cache: true,
     ping: 60,
     ping_timeout: 30,
-allow_origin: "*",
+    allow_origin: "*",
   },
   http: {
     port: 8000,

@@ -2,7 +2,7 @@ const express = require("express");
 const StreamController = require("../controllers/StreamController");
 const AuthMiddleware = require("../middlewares/AuthMiddleware");
 const streamController = new StreamController();
-const upload = require('../middlewares/UploadConfig');
+const upload = require("../middlewares/UploadConfig");
 
 const streamRoutes = express.Router();
 
@@ -14,9 +14,17 @@ streamRoutes.post(
   streamController.startStream
 );
 
-streamRoutes.post('/streams/end/:streamId', AuthMiddleware, streamController.endStream);
+streamRoutes.post(
+  "/streams/end/:streamId",
+  AuthMiddleware,
+  streamController.endStream
+);
 
-streamRoutes.post('/streams/save/:streamId', AuthMiddleware, streamController.saveStream);
+streamRoutes.post(
+  "/streams/save/:streamId",
+  AuthMiddleware,
+  streamController.saveStream
+);
 
 streamRoutes.post(
   "streams/:streamId/:userId/dislike",
@@ -40,10 +48,28 @@ streamRoutes.get(
   streamController.getStream
 );
 
-streamRoutes.patch('/streams/:streamId', AuthMiddleware, streamController.updateStream);
+streamRoutes.patch(
+  "/streams/:streamId",
+  AuthMiddleware,
+  streamController.updateStream
+);
 
-streamRoutes.get('/streams/stream-url/:streamId', AuthMiddleware, streamController.getStreamUrl);
+streamRoutes.get(
+  "/streams/stream-url/:streamId",
+  AuthMiddleware,
+  streamController.getStreamUrl
+);
 
-streamRoutes.get('/streams/categories', AuthMiddleware, streamController.getCategories);
+streamRoutes.get(
+  "/streams/categories",
+  AuthMiddleware,
+  streamController.getCategories
+);
+
+streamRoutes.get(
+  "/streams/category/:category",
+  AuthMiddleware,
+  streamController.getStreamByCategory
+);
 
 module.exports = streamRoutes;
