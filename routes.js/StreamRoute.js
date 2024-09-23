@@ -66,11 +66,16 @@ streamRoutes.get(
   streamController.getStreamUrl
 );
 
+streamRoutes.get(
+  "/streams/categories",
+  AuthMiddleware,
+  streamController.getCategories
+);
 
-// streamRoutes.get(
-//   "/streams/category/:category/:page",
-//   AuthMiddleware,
-//   streamController.getStreamByCategory
-// );
+// New route using query params
+streamRoutes.get("/stream/filter-by-category", AuthMiddleware, (req, res) => {
+  console.log("Route hit!");
+  streamController.getStreamByCategory(req, res);
+});
 
 module.exports = streamRoutes;

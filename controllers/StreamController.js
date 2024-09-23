@@ -98,7 +98,7 @@ class StreamController {
 
   // get all streams
   async getStreams(req, res) {
-    const {page, size, isStreaming } = req.query;
+    const { page, size, isStreaming } = req.query;
     const query = {};
 
     if (isStreaming) {
@@ -222,6 +222,21 @@ class StreamController {
       const response = await likeByUserService(streamId, userId);
       res.status(200).json({ message: "Success" });
     } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async getStreamByCategory(req, res) {
+    const { category } = req.query; // Get category from query params
+    const page = parseInt(req.query.page) || 1; // Pagination: default to 1
+    const itemsPerPage = parseInt(req.query.itemsPerPage) || 10; // Default page size
+
+    try {
+      // Call the service layer to get the streams and total count
+      const result = await getStreamByCategory(category, page, itemsPerPage);
+      res.status(200).json(result); // Send the result to the client
+    } catch (error) {
+      // If an error occurs, send a 500 status with the error message
       res.status(500).json({ error: error.message });
     }
   }
