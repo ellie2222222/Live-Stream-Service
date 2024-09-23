@@ -17,7 +17,7 @@ const uploadToBunny = async (file) => {
 
         // Tạo URL tải lên
         const uploadUrl = `https://${storageUrl}/${zoneName}/${fileName}`;
-        console.log(uploadUrl)
+        
         // Thực hiện yêu cầu tải lên
         const response = await axios.put(uploadUrl, fileStream, {
             headers: {
@@ -25,7 +25,7 @@ const uploadToBunny = async (file) => {
                 'AccessKey': password,
             }
         });
-        console.log(`https://${cdn}/${fileName}`)
+
         return `https://${cdn}/${fileName}`;
     } catch (error) {
         console.error('Error uploading file:', error.message);

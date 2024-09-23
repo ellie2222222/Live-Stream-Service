@@ -2,10 +2,12 @@ const bcrypt = require("bcrypt");
 const validator = require("validator");
 const mongoose = require("mongoose");
 const DatabaseTransaction = require("../repositories/DatabaseTransaction");
-const { uploadToBunny } = require("../middlewares/UploadToBunny");
+const { uploadToBunny, deleteFromBunny } = require("../middlewares/UploadToBunny");
 
 // Sign up a new user
 const signup = async (name, email, password, bio, img) => {
+  let avatarUrl = null;
+
   try {
       const connection = new DatabaseTransaction();
 
@@ -31,7 +33,7 @@ const signup = async (name, email, password, bio, img) => {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      let avatarUrl = null;
+      
       if (img) {
           avatarUrl = await uploadToBunny(img);
       }
@@ -46,7 +48,8 @@ const signup = async (name, email, password, bio, img) => {
 
       return user;
   } catch (error) {
-      throw new Error(error.message);
+    await deleteFromBunny(avatarUrl);
+    throw new Error(error.message);
   }
 };
 
