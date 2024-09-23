@@ -96,7 +96,6 @@ class StreamRepository {
         .limit(pageSize);
 
       const totalStreams = await Stream.countDocuments(filters);
-      console.log(`Total streams: ${totalStreams}`);
       const totalPages = Math.ceil(totalStreams / pageSize);
       
       return { streams, totalPages };

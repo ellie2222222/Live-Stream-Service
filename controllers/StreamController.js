@@ -67,7 +67,7 @@ class StreamController {
 
   // get all streams
   async getStreams(req, res) {
-    const {page, isStreaming } = req.query;
+    const {page, size, isStreaming } = req.query;
     const query = {};
 
     if (isStreaming) {
@@ -75,7 +75,7 @@ class StreamController {
     }
 
     try {
-      const streams = await findAllStreams(page, query);
+      const streams = await findAllStreams(page, size, query);
 
       res.status(200).json({ data: streams, message: "Success" });
     } catch (error) {
