@@ -8,6 +8,12 @@ const streamRoutes = express.Router();
 
 streamRoutes.get("/streams/", AuthMiddleware, streamController.getStreams);
 
+streamRoutes.get(
+  "/streams/categories",
+  AuthMiddleware,
+  streamController.getCategories
+);
+
 streamRoutes.post(
   "/streams/",
   upload.single("thumbnail"),
@@ -60,16 +66,11 @@ streamRoutes.get(
   streamController.getStreamUrl
 );
 
-streamRoutes.get(
-  "/streams/categories",
-  AuthMiddleware,
-  streamController.getCategories
-);
 
-streamRoutes.get(
-  "/streams/category/:category/:page",
-  AuthMiddleware,
-  streamController.getStreamByCategory
-);
+// streamRoutes.get(
+//   "/streams/category/:category/:page",
+//   AuthMiddleware,
+//   streamController.getStreamByCategory
+// );
 
 module.exports = streamRoutes;
