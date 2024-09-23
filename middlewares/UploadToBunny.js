@@ -4,19 +4,20 @@ require('dotenv').config();
 
 const uploadToBunny = async (file) => {
     try {
-        const zoneName = process.env.BUNNY_STORAGE_ZONE_NAME;
-        const password = process.env.BUNNY_STORAGE_PASSWORD;
+        const zoneName = process.env.BUNNYCDN_STORAGE_ZONE_NAME;
+        const password = process.env.BUNNYCDN_STORAGE_PASSWORD;
         const storageUrl = process.env.BUNNY_STORAGE_URL;
         const cdn = process.env.BUNNY_STORAGE_CDN;
 
         const fileStream = new stream.PassThrough();
         fileStream.end(file.buffer);
 
-        const fileName = file.originalname;
+        const timestamp = Date.now();
+        const fileName = `${timestamp}-${file.originalname}`; 
 
         // Tạo URL tải lên
         const uploadUrl = `https://${storageUrl}/${zoneName}/${fileName}`;
-
+        
         // Thực hiện yêu cầu tải lên
         const response = await axios.put(uploadUrl, fileStream, {
             headers: {
@@ -39,8 +40,8 @@ const deleteFromBunny = async (fileUrl) => {
         // }
         
         const fileName = fileUrl.split('/').pop();
-        const zoneName = process.env.BUNNY_STORAGE_ZONE_NAME;
-        const password = process.env.BUNNY_STORAGE_PASSWORD;
+        const zoneName = process.env.BUNNYCDN_STORAGE_ZONE_NAME;
+        const password = process.env.BUNNYCDN_STORAGE_PASSWORD;
         const storageUrl = process.env.BUNNY_STORAGE_URL;
 
         const deleteUrl = `https://${storageUrl}/${zoneName}/${fileName}`;

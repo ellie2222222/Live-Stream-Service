@@ -1,17 +1,17 @@
-const express = require('express')
-const UserController = require('../controllers/UserController');
-const AuthMiddleware = require('../middlewares/AuthMiddleware');
+const express = require("express");
+const UserController = require("../controllers/UserController");
+const AuthMiddleware = require("../middlewares/AuthMiddleware");
 const userController = new UserController();
 const upload = require('../middlewares/UploadConfig');
 
 const userRoutes = express.Router();
 
-userRoutes.get('/users/getAllUser', AuthMiddleware, userController.getAllUser);
+userRoutes.get("/users/", AuthMiddleware, userController.getUsers);
 
-userRoutes.get('/users/getUser', AuthMiddleware, userController.getUser);
+userRoutes.patch("/users/:userId", AuthMiddleware, upload.single('avatar'), userController.updateUser);
 
-userRoutes.put('/users/update', upload.single('img'), AuthMiddleware, userController.updateUser);
+userRoutes.get("/users/:userId", AuthMiddleware, userController.getUser);
 
-userRoutes.delete('/users/delete', AuthMiddleware, userController.deleteUser);
+userRoutes.delete("/users/:userId", AuthMiddleware, userController.deleteUser);
 
 module.exports = userRoutes;

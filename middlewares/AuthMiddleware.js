@@ -20,7 +20,7 @@ const AuthMiddleware = async (req, res, next) => {
         }
 
         req.userId = _id;
-        // req.userRole = role; // Thêm role vào req
+
         next();
     } catch (error) {
         if (error.name === 'TokenExpiredError') {

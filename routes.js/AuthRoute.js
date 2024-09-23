@@ -6,8 +6,6 @@ const upload = require('../middlewares/UploadConfig');
 
 authRoutes.post('/auth/login', authController.loginUser);
 
-authRoutes.post('/auth/signup', upload.single('img'), authController.signupUser);
-
-authRoutes.post('/logout', () => {});
+authRoutes.post('/auth/signup', upload.single('avatar'), authController.signupUser);
 
 module.exports = authRoutes;

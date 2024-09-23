@@ -1,14 +1,49 @@
-const express = require('express')
-const StreamController = require('../controllers/StreamController');
-const AuthMiddleware = require('../middlewares/AuthMiddleware');
+const express = require("express");
+const StreamController = require("../controllers/StreamController");
+const AuthMiddleware = require("../middlewares/AuthMiddleware");
 const streamController = new StreamController();
+const upload = require('../middlewares/UploadConfig');
 
 const streamRoutes = express.Router();
 
-streamRoutes.get('/stream/getCate', AuthMiddleware, streamController.getCate);
+streamRoutes.get("/streams/", AuthMiddleware, streamController.getStreams);
 
-streamRoutes.post('/stream/likeStream', AuthMiddleware, streamController.likeStreamControll);
+streamRoutes.post(
+  "/streams/",
+  upload.single("thumbnail"),
+  streamController.startStream
+);
 
-streamRoutes.get('/stream/getTop10Stream', streamController.getTop10Stream);
+streamRoutes.post('/streams/end/:streamId', AuthMiddleware, streamController.endStream);
+
+streamRoutes.post('/streams/save/:streamId', AuthMiddleware, streamController.saveStream);
+
+streamRoutes.post(
+  "streams/:streamId/:userId/dislike",
+  streamController.dislikeByUser
+);
+
+streamRoutes.post(
+  "streams/:streamId/:userId/like",
+  streamController.likeByUser
+);
+
+streamRoutes.delete(
+  "/streams/:streamId",
+  AuthMiddleware,
+  streamController.deleteStream
+);
+
+streamRoutes.get(
+  "/streams/:streamId",
+  AuthMiddleware,
+  streamController.getStream
+);
+
+streamRoutes.patch('/streams/:streamId', AuthMiddleware, streamController.updateStream);
+
+streamRoutes.get('/streams/stream-url/:streamId', AuthMiddleware, streamController.getStreamUrl);
+
+streamRoutes.get('/streams/categories', AuthMiddleware, streamController.getCategories);
 
 module.exports = streamRoutes;

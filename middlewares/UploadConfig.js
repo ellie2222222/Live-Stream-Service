@@ -1,21 +1,17 @@
 const multer = require('multer');
 const path = require('path');
-const uploadToBunny = require('./uploadToBunny');
+const uploadToBunny = require('./UploadToBunny');
 
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
-    if (file.fieldname === 'img') {
-        const filetypes = /\.(svg|jpg|jpeg|png)$/i;
-        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const filetypes = /\.(svg|jpg|jpeg|png|webp)$/i;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
 
-        if (extname) {
-            return cb(null, true);
-        } else {
-            cb(new Error('Chỉ chấp nhận file ảnh svg, jpg, jpeg, hoặc png'));
-        }
+    if (extname) {
+        return cb(null, true);
     } else {
-        return cb(new Error('Loại tệp không được chấp nhận'));
+        cb(new Error('Chỉ chấp nhận file ảnh svg, jpg, jpeg, hoặc png'));
     }
 };
 

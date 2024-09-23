@@ -1,3 +1,4 @@
+
 const typesMapping = {
     0: "Chưa chọn",
     1: "LOL",

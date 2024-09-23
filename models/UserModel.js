@@ -5,8 +5,11 @@ const Schema = mongoose.Schema
 const userSchema = new Schema( {
     name: {
         type: String,
-        required: true,
+        required: [true, 'Name is required'],
         default: '',
+        trim: true,
+        minlength: [3, 'Name must be at least 1 characters long'],
+        maxlength: [50, 'Name cannot exceed 50 characters']
     },
     email: {
         type: String,
@@ -20,6 +23,7 @@ const userSchema = new Schema( {
     bio: {
         type: String,
         default: '',
+        maxlength: [250, 'Bio cannot exceed 250 characters']
     },
     avatarUrl: {
         type: String,
