@@ -1,7 +1,7 @@
+const { uploadToBunny, deleteFromBunny } = require("../middlewares/UploadToBunny");
 const { login, signup } = require("../services/UserService");
-const mongoose = require("mongoose");
-const jwt = require("jsonwebtoken");
 const createAccessToken = require("../utils/createAccessToken");
+require("dotenv").config();
 class AuthController {
   // login a user
   async loginUser(req, res) {
@@ -10,7 +10,7 @@ class AuthController {
     try {
       const user = await login(email, password);
 
-            const accessToken = createAccessToken(user._id);
+      const accessToken = createAccessToken(user._id);
 
       res.status(200).json({ accessToken, message: "Login success" });
     } catch (error) {
@@ -20,16 +20,19 @@ class AuthController {
 
   // signup a user
   async signupUser(req, res) {
-    const { username, email, password } = req.body;
-   
+    const { name, email, password, bio } = req.body;
+    const avatarFile = req.file;
+
+    if (!avatarFile) {
+      return res.status(400).send({ message: "Avatar file is required" });
+    }
+
     try {
-      const user = await signup(username, email, password);
+      const user = await signup(name, email, password, bio, avatarFile);
 
-      const accessToken = createAccessToken(user._id);
-
-      res.status(201).json({ accessToken, message: "Signup success" });
+      res.status(201).json({ message: "Signup success" });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: error.message });
     }
   }
 }
