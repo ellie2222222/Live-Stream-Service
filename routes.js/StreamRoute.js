@@ -6,72 +6,38 @@ const upload = require("../middlewares/UploadConfig");
 
 const streamRoutes = express.Router();
 
-streamRoutes.get("/streams/", AuthMiddleware, streamController.getStreams);
+// Get all streams
+streamRoutes.get("/streams", AuthMiddleware, streamController.getStreams);
 
-streamRoutes.post(
-  "/streams/",
-  upload.single("thumbnail"),
-  streamController.startStream
-);
+// Post new stream
+streamRoutes.post("/streams", upload.single("thumbnail"), streamController.startStream);
 
-streamRoutes.post(
-  "/streams/end/:streamId",
-  AuthMiddleware,
-  streamController.endStream
-);
+// Get categories for streams
+streamRoutes.get("/streams/categories", AuthMiddleware, streamController.getCategories);
 
-streamRoutes.post(
-  "/streams/save/:streamId",
-  AuthMiddleware,
-  streamController.saveStream
-);
+// Filter streams by category
+streamRoutes.get("/streams/filter-by-category", AuthMiddleware, streamController.getStreamByCategory);
 
-streamRoutes.post(
-  "streams/:streamId/:userId/dislike",
-  streamController.dislikeByUser
-);
+// Get the top 1 stream
+streamRoutes.get("/streams/top1", AuthMiddleware, streamController.getTop1);
 
-streamRoutes.post(
-  "streams/:streamId/:userId/like",
-  streamController.likeByUser
-);
+// End a stream
+streamRoutes.post("/streams/end/:streamId", AuthMiddleware, streamController.endStream);
 
-streamRoutes.delete(
-  "/streams/:streamId",
-  AuthMiddleware,
-  streamController.deleteStream
-);
+// Save a stream
+streamRoutes.post("/streams/save/:streamId", AuthMiddleware, streamController.saveStream);
 
-streamRoutes.get(
-  "/streams/:streamId",
-  AuthMiddleware,
-  streamController.getStream
-);
+// Like/Dislike routes
+streamRoutes.post("/streams/:streamId/:userId/dislike", streamController.dislikeByUser);
+streamRoutes.post("/streams/:streamId/:userId/like", streamController.likeByUser);
 
-streamRoutes.patch(
-  "/streams/:streamId",
-  AuthMiddleware,
-  streamController.updateStream
-);
+// Get, Update, Delete stream
+streamRoutes.delete("/streams/:streamId", AuthMiddleware, streamController.deleteStream);
+streamRoutes.get("/streams/:streamId", AuthMiddleware, streamController.getStream);
+streamRoutes.patch("/streams/:streamId", AuthMiddleware, streamController.updateStream);
 
-streamRoutes.get(
-  "/streams/stream-url/:streamId",
-  AuthMiddleware,
-  streamController.getStreamUrl
-);
+// Get stream URL by stream ID
+streamRoutes.get("/streams/stream-url/:streamId", AuthMiddleware, streamController.getStreamUrl);
 
-streamRoutes.get(
-  "/streams/categories",
-  AuthMiddleware,
-  streamController.getCategories
-);
-
-// New route using query params
-streamRoutes.get("/stream/filter-by-category", AuthMiddleware, (req, res) => {
-  console.log("Route hit!");
-  streamController.getStreamByCategory(req, res);
-});
-
-streamRoutes.get("/stream/top1", AuthMiddleware, streamController.getTop1);
 module.exports = streamRoutes;
 
