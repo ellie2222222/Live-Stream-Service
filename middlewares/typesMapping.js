@@ -7,4 +7,4 @@ const typesMapping = {
   5: "ĐỘT KÍCH",
 };
 
-export default typesMapping;
+module.exports = typesMapping;

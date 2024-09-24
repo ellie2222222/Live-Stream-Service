@@ -10,6 +10,7 @@ const {
   createAStreamService,
   saveStream,
 } = require("../services/StreamService");
+const typesMapping = require("../middlewares/typesMapping");
 const fs = require("fs");
 require("dotenv").config();
 
@@ -23,7 +24,15 @@ const BUNNY_CDN_API_KEY =
 class StreamController {
   async getCategories(req, res) {
     try {
-      const categories = null;
+      if (!typesMapping || Object.keys(typesMapping).length === 0) {
+        return res.status(500).json({ error: "Types mapping is not defined" });
+      }
+
+      const categories = Object.entries(typesMapping).map(([key, value]) => ({
+        id: key,
+        name: value,
+      }));
+
       res.status(200).json({ data: categories, message: "Success" });
     } catch (error) {
       console.error("Error in getCate:", error.message);

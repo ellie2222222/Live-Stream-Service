@@ -4,7 +4,7 @@ const cors = require("cors");
 const http = require("http");
 const NodeMediaServer = require("node-media-server");
 const socketIo = require("socket.io");
-const { saveStreamToBunny } = require("./services/StreamService");
+const { saveStreamToBunny, updateStream } = require("./services/StreamService");
 const { createAMessageService } = require("./services/MessageService");
 const { findUser } = require("./services/UserService");
 
@@ -80,6 +80,7 @@ function handleLeaveRoom(socket, roomId) {
 
 function updateViewersCount(roomId) {
   const viewersCount = io.sockets.adapter.rooms.get(roomId)?.size || 0;
+  updateStream(roomId, { currentViewCount: viewersCount });
   io.to(roomId).emit("viewers_count", viewersCount);
 }
 
