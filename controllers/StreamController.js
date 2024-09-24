@@ -10,6 +10,7 @@ const {
   createAStreamService,
   saveStream,
   getStreamByCategory,
+  getTop1,
 } = require("../services/StreamService");
 const fs = require("fs");
 require("dotenv").config();
@@ -217,6 +218,16 @@ class StreamController {
       res.status(200).json(result); // Send the result to the client
     } catch (error) {
       // If an error occurs, send a 500 status with the error message
+      res.status(500).json({ error: error.message });
+    }
+  }
+  async getTop1(req, res) {
+    const { type } = req.query;
+    console.log("controller is called, type: ", type);
+    try {
+      const result = await getTop1(type);
+      res.status(200).json(result);
+    } catch (error) {
       res.status(500).json({ error: error.message });
     }
   }

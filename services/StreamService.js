@@ -389,6 +389,17 @@ const getStreamByCategory = async (category, page = 1, itemsPerPage = 10) => {
     throw new Error(error.message);
   }
 };
+const getTop1 = async (type) => {
+  console.log("services is called, type: ", type);
+
+  try {
+    const connection = new DatabaseTransaction();
+    const stream = await connection.streamRepository.CurrentlyTop1(type);
+    return stream;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 module.exports = {
   findStream,
   findAllStreams,
@@ -402,4 +413,5 @@ module.exports = {
   createAStreamService,
   saveStreamToBunny,
   getStreamByCategory,
+  getTop1,
 };

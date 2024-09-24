@@ -72,4 +72,5 @@ streamRoutes.get("/stream/filter-by-category", AuthMiddleware, (req, res) => {
   streamController.getStreamByCategory(req, res);
 });
 
+streamRoutes.get("/stream/top1", AuthMiddleware, streamController.getTop1);
 module.exports = streamRoutes;
