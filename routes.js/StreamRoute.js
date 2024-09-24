@@ -14,6 +14,12 @@ streamRoutes.get(
 
 streamRoutes.get("/streams/", AuthMiddleware, streamController.getStreams);
 
+streamRoutes.get(
+  "/streams/categories",
+  AuthMiddleware,
+  streamController.getCategories
+);
+
 streamRoutes.post(
   "/streams/",
   upload.single("thumbnail"),

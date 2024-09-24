@@ -1,4 +1,5 @@
 const { uploadToBunny } = require("../middlewares/UploadToBunny");
+const typesMapping = require("../middlewares/typesMapping");
 const {
   deleteStream,
   updateStream,
@@ -25,7 +26,14 @@ const BUNNY_CDN_API_KEY =
 class StreamController {
   async getCategories(req, res) {
     try {
-      const categories = null;
+      if (!typesMapping || Object.keys(typesMapping).length === 0) {
+        return res.status(500).json({ error: "Types mapping is not defined" });
+      }
+
+      const categories = Object.entries(typesMapping).map(([key, value]) => ({
+        id: key,
+        name: value,
+      }));
 
       res.status(200).json({ data: categories, message: "Success" });
     } catch (error) {
@@ -33,6 +41,27 @@ class StreamController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  // async getCategories(req, res) {
+  //   try {
+  //     const token = req.userId;
+
+  //     if (!token) {
+  //       return res.status(400).json({ error: 'Token is Invalid' });
+  //     }
+
+  //     const categories = Object.entries(typesMapping).map(([key, value]) => ({
+  //       id: key,
+  //       name: value,
+  //     }));
+
+  //     res.status(200).json({ data: categories, token: token, message: 'Success' });
+  //   } catch (error) {
+
+  //     console.error('Error in getCate:', error.message);
+  //     res.status(500).json({ error: error.message });
+  //   }
+  // }
 
   async likeStream(req, res) {
     try {
