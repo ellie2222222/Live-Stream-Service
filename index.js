@@ -133,7 +133,7 @@ nms.on("postPublish", async (_, streamPath, _params) => {
 });
 
 // // Start the media server
-// nms.run();
+nms.run();
 
 // Start server
 const port = process.env.DEVELOPMENT_PORT || 4000;
