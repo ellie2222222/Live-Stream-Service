@@ -252,9 +252,15 @@ class StreamController {
   }
   async getTop1(req, res) {
     const { type } = req.query;
+    let query;
     console.log("controller is called, type: ", type);
+    if (type === null) {
+      query === "like";
+    } else {
+      query = type;
+    }
     try {
-      const result = await getTop1(type);
+      const result = await getTop1(query);
       res.status(200).json(result);
     } catch (error) {
       res.status(500).json({ error: error.message });

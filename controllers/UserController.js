@@ -3,6 +3,7 @@ const {
   updateUserProfile,
   deactivateUser,
   findAllUsers,
+  getTopXLiked,
 } = require("../services/UserService");
 const {
   uploadToBunny,
@@ -79,6 +80,21 @@ class UserController {
       res.status(200).json({ message: "Success" });
     } catch (error) {
       res.status(500).json({ error: error.message });
+    }
+  }
+  async getTopLikedUser(req, res) {
+    const { top } = req.query; // Read 'top' from query
+    const limit = parseInt(top) || 10; // Default to 10 if not provided
+    try {
+      const users = await getTopXLiked(limit);
+      if (!users || users.length === 0) {
+        return res.status(404).json({ message: "No users found" });
+      }
+      return res
+        .status(200)
+        .json({ data: users, message: "Success", total: users.length }); // Correct 'users' object
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
     }
   }
 }

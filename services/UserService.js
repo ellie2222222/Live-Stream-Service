@@ -2,7 +2,10 @@ const bcrypt = require("bcrypt");
 const validator = require("validator");
 const mongoose = require("mongoose");
 const DatabaseTransaction = require("../repositories/DatabaseTransaction");
-const { uploadToBunny, deleteFromBunny } = require("../middlewares/UploadToBunny");
+const {
+  uploadToBunny,
+  deleteFromBunny,
+} = require("../middlewares/UploadToBunny");
 
 // Sign up a new user
 const signup = async (name, email, password, bio, img) => {
@@ -35,18 +38,17 @@ const signup = async (name, email, password, bio, img) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-      
-      if (img) {
-          avatarUrl = await uploadToBunny(img);
-      }
-      
-      const user = await connection.userRepository.createUser({
-          name,
-          email,
-          password: hashedPassword,
-          bio, 
-          avatarUrl,
-      });
+    if (img) {
+      avatarUrl = await uploadToBunny(img);
+    }
+
+    const user = await connection.userRepository.createUser({
+      name,
+      email,
+      password: hashedPassword,
+      bio,
+      avatarUrl,
+    });
 
     return user;
   } catch (error) {
@@ -142,6 +144,17 @@ const deactivateUser = async (userId) => {
     throw new Error(error.message);
   }
 };
+const getTopXLiked = async (x) => {
+  const connection = new DatabaseTransaction();
+  const limit = x || 10;
+  try {
+    const topX = await connection.userRepository.getTopUsersByLikes(limit);
+    console.log(topX.length);
+    return topX;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 
 module.exports = {
   login,
@@ -150,4 +163,5 @@ module.exports = {
   findAllUsers,
   updateUserProfile,
   deactivateUser,
+  getTopXLiked,
 };
