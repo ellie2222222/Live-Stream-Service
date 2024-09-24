@@ -15,10 +15,8 @@ const uploadToBunny = async (file) => {
         const timestamp = Date.now();
         const fileName = `${timestamp}-${file.originalname}`; 
 
-        // Tạo URL tải lên
         const uploadUrl = `https://${storageUrl}/${zoneName}/${fileName}`;
-        
-        // Thực hiện yêu cầu tải lên
+
         const response = await axios.put(uploadUrl, fileStream, {
             headers: {
                 'Content-Type': file.mimetype,
@@ -26,20 +24,21 @@ const uploadToBunny = async (file) => {
             }
         });
 
-        return `https://${cdn}/${fileName}`;
+        const imageUrl = `https://${cdn}/${fileName}`;
+
+        return imageUrl;
     } catch (error) {
-        console.error('Error uploading file:', error.message);
-        throw error; // Để xử lý lỗi ở nơi gọi hàm
+        throw new Error(error.message)
     }
 };
 
 const deleteFromBunny = async (fileUrl) => {
     try {
-        // if (typeof fileUrl !== 'string') {
-        //     throw new Error('Invalid file URL');
-        // }
-        
         const fileName = fileUrl.split('/').pop();
+        if (!fileName) {
+            throw new Error("File name could not be extracted from URL");
+        }
+
         const zoneName = process.env.BUNNYCDN_STORAGE_ZONE_NAME;
         const password = process.env.BUNNYCDN_STORAGE_PASSWORD;
         const storageUrl = process.env.BUNNY_STORAGE_URL;
