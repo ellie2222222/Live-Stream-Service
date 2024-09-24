@@ -6,6 +6,12 @@ const upload = require("../middlewares/UploadConfig");
 
 const streamRoutes = express.Router();
 
+streamRoutes.get(
+  "/streams/categories",
+  AuthMiddleware,
+  streamController.getCategories
+);
+
 streamRoutes.get("/streams/", AuthMiddleware, streamController.getStreams);
 
 streamRoutes.post(
@@ -60,12 +66,6 @@ streamRoutes.get(
   streamController.getStreamUrl
 );
 
-streamRoutes.get(
-  "/streams/categories",
-  AuthMiddleware,
-  streamController.getCategories
-);
-
 // New route using query params
 streamRoutes.get("/stream/filter-by-category", AuthMiddleware, (req, res) => {
   console.log("Route hit!");
@@ -74,4 +74,3 @@ streamRoutes.get("/stream/filter-by-category", AuthMiddleware, (req, res) => {
 
 streamRoutes.get("/stream/top1", AuthMiddleware, streamController.getTop1);
 module.exports = streamRoutes;
-
