@@ -158,6 +158,38 @@ class StreamRepository {
       throw new Error(`Error getting streams by category: ${error.message}`);
     }
   }
+
+  async CurrentlyTop1(type) {
+    console.log("repo is called, type: ", type);
+    try {
+      let stream;
+
+      if (type.toLowerCase() === "view") {
+        // Sorting by view count
+        stream = await Stream.find({ endedAt: null })
+          .sort({ currentViewCount: -1 })
+          .limit(1);
+      } else if (type.toLowerCase() === "like") {
+        // Sorting by the number of likes (size of likeBy array)
+        const result = await Stream.aggregate([
+          { $match: { endedAt: null } }, // Filter for live streams
+          { $addFields: { likeCount: { $size: "$likeBy" } } }, // Add a field for the size of likeBy array
+          { $sort: { likeCount: -1 } }, // Sort by likeCount (descending)
+          { $limit: 1 }, // Limit to the top 1 stream
+        ]);
+
+        stream = result; // Since aggregation returns an array, pick the first element
+      } else {
+        throw new Error(`Unsupported type: ${type}. Use 'view' or 'like'.`);
+      }
+
+      return stream;
+    } catch (error) {
+      throw new Error(
+        `Error getting top 1 stream for ${type}: ${error.message}`
+      );
+    }
+  }
 }
 
 module.exports = StreamRepository;
