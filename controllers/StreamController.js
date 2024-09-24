@@ -24,7 +24,6 @@ class StreamController {
   async getCategories(req, res) {
     try {
       const categories = null;
-
       res.status(200).json({ data: categories, message: "Success" });
     } catch (error) {
       console.error("Error in getCate:", error.message);
