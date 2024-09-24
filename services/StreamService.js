@@ -34,10 +34,14 @@ const findAllStreams = async (page, size, query) => {
   try {
     const connection = new DatabaseTransaction();
 
-    const pageSize= size || 10;
+    const pageSize = size || 10;
     const pageNumber = page || 1;
 
-    const streams = await connection.streamRepository.getAllStreams(pageSize, pageNumber, query);
+    const streams = await connection.streamRepository.getAllStreams(
+      pageSize,
+      pageNumber,
+      query
+    );
 
     return streams;
   } catch (error) {
@@ -385,6 +389,17 @@ const getStreamByCategory = async (category, page = 1, itemsPerPage = 10) => {
     throw new Error(error.message);
   }
 };
+const getTop1 = async (type) => {
+  console.log("services is called, type: ", type);
+
+  try {
+    const connection = new DatabaseTransaction();
+    const stream = await connection.streamRepository.CurrentlyTop1(type);
+    return stream;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 module.exports = {
   findStream,
   findAllStreams,
@@ -398,4 +413,5 @@ module.exports = {
   createAStreamService,
   saveStreamToBunny,
   getStreamByCategory,
+  getTop1,
 };
