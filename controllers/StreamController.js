@@ -22,44 +22,23 @@ const BUNNY_CDN_API_KEY = process.env.BUNNYCDN_STORAGE_PASSWORD || "e68740b8-e7b
 class StreamController {
   async getCategories(req, res) {
     try {
+      if (!typesMapping || Object.keys(typesMapping).length === 0) {
+        return res.status(500).json({ error: "Types mapping is not defined" });
+      }
 
-        if (!typesMapping || Object.keys(typesMapping).length === 0) {
-            return res.status(500).json({ error: 'Types mapping is not defined' });
-        }
+      // Correct the structure to avoid nesting the name and image
+      const categories = Object.entries(typesMapping).map(([key, value]) => ({
+        id: key,
+        name: value.name, // Directly access the name
+        image: value.image, // Directly access the image
+      }));
 
-        const categories = Object.entries(typesMapping).map(([key, value]) => ({
-            id: key,
-            name: value,
-        }));
-
-        res.status(200).json({ data: categories, message: 'Success' });
+      res.status(200).json({ data: categories, message: "Success" });
     } catch (error) {
-        console.error('Error in getCate:', error.message);
-        res.status(500).json({ error: error.message });
+      console.error("Error in getCategories:", error.message);
+      res.status(500).json({ error: error.message });
     }
   }
-
-
-  // async getCategories(req, res) {
-  //   try {
-  //     const token = req.userId;
-
-  //     if (!token) {
-  //       return res.status(400).json({ error: 'Token is Invalid' });
-  //     }
-
-  //     const categories = Object.entries(typesMapping).map(([key, value]) => ({
-  //       id: key,
-  //       name: value,
-  //     }));
-
-  //     res.status(200).json({ data: categories, token: token, message: 'Success' });
-  //   } catch (error) {
-
-  //     console.error('Error in getCate:', error.message);
-  //     res.status(500).json({ error: error.message });
-  //   }
-  // }
 
   async likeStream(req, res) {
     try {
@@ -135,7 +114,7 @@ class StreamController {
     const thumbnailFile = req.file;
 
     if (!thumbnailFile) {
-      return res.status(400).send({ error: "Thumbnail file is required"});
+      return res.status(400).send({ error: "Thumbnail file is required" });
     }
 
     try {
@@ -179,16 +158,16 @@ class StreamController {
     const { title } = req.body;
     const thumbnailFile = req.file;
     let thumbnailUrl = req.body.thumbnailUrl;
-  
+
     try {
       if (thumbnailFile) {
         thumbnailUrl = await uploadToBunny(thumbnailFile);
       }
 
       const updateData = { title, thumbnailUrl };
-  
+
       const stream = await updateStream(streamId, updateData);
-  
+
       res.status(200).json({ data: stream, message: "Stream updated successfully" });
     } catch (error) {
       res.status(500).json({ error: error.message });
