@@ -93,8 +93,11 @@ class StreamRepository {
 
       const streams = await Stream.find(filters)
         .skip(pageSize * (pageNumber - 1))
-        .limit(pageSize);
-
+        .limit(pageSize)
+        .populate({
+          path: "userId", // Path to the related User document
+          select: "name avatarUrl", // Limit the fields from User document
+        });
       const totalStreams = await Stream.countDocuments(filters);
       const totalPages = Math.ceil(totalStreams / pageSize);
 
