@@ -30,18 +30,19 @@ class StreamController {
         return res.status(500).json({ error: "Types mapping is not defined" });
       }
 
+      // Correct the structure to avoid nesting the name and image
       const categories = Object.entries(typesMapping).map(([key, value]) => ({
         id: key,
-        name: value,
+        name: value.name, // Directly access the name
+        image: value.image, // Directly access the image
       }));
 
       res.status(200).json({ data: categories, message: "Success" });
     } catch (error) {
-      console.error("Error in getCate:", error.message);
+      console.error("Error in getCategories:", error.message);
       res.status(500).json({ error: error.message });
     }
   }
-
   // async getCategories(req, res) {
   //   try {
   //     const token = req.userId;
