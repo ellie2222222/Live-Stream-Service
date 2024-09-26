@@ -88,6 +88,24 @@ class UserRepository {
       throw new Error(`Error finding user: ${error.message}`);
     }
   }
+
+  async verifyUserEmail(email) {
+    try {
+      const user = await User.findOneAndUpdate(
+        { email },
+        { $set: { verify: true } },
+        { new: true, runValidators: true }
+      );
+
+      if (!user) {
+        throw new Error(`User with email ${email} not found`);
+      }
+
+      return user;
+    } catch (error) {
+      throw new Error(`Error verifying user email: ${error.message}`);
+    }
+  }
   async getTopUsersByLikes(limit = 10) {
     try {
       const topUsers = await User.aggregate([
@@ -174,5 +192,4 @@ class UserRepository {
     return userTotalLikes[0];
   }
 }
-
 module.exports = UserRepository;
