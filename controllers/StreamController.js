@@ -43,26 +43,6 @@ class StreamController {
       res.status(500).json({ error: error.message });
     }
   }
-  // async getCategories(req, res) {
-  //   try {
-  //     const token = req.userId;
-
-  //     if (!token) {
-  //       return res.status(400).json({ error: 'Token is Invalid' });
-  //     }
-
-  //     const categories = Object.entries(typesMapping).map(([key, value]) => ({
-  //       id: key,
-  //       name: value,
-  //     }));
-
-  //     res.status(200).json({ data: categories, token: token, message: 'Success' });
-  //   } catch (error) {
-
-  //     console.error('Error in getCate:', error.message);
-  //     res.status(500).json({ error: error.message });
-  //   }
-  // }
 
   async likeStream(req, res) {
     try {
@@ -195,6 +175,10 @@ class StreamController {
       const updateData = { title, thumbnailUrl };
 
       const stream = await updateStream(streamId, updateData);
+
+      res
+        .status(200)
+        .json({ data: stream, message: "Stream updated successfully" });
 
       res
         .status(200)
