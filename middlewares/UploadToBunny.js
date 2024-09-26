@@ -34,6 +34,9 @@ const uploadToBunny = async (file) => {
 
 const deleteFromBunny = async (fileUrl) => {
     try {
+        if(fileUrl === null || fileUrl === undefined) {
+            return;
+        }
         const fileName = fileUrl.split('/').pop();
         if (!fileName) {
             throw new Error("File name could not be extracted from URL");
