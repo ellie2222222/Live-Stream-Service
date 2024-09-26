@@ -9,6 +9,7 @@ const {
 const mailer = require("../utils/mailer");
 const { text } = require("express");
 
+
 // Sign up a new user
 const signup = async (name, email, password, bio, img) => {
   let avatarUrl = null;
@@ -223,6 +224,27 @@ const deactivateUser = async (userId) => {
     throw new Error(error.message);
   }
 };
+const getTopXLiked = async (x) => {
+  const connection = new DatabaseTransaction();
+  const limit = x || 10;
+  try {
+    const topX = await connection.userRepository.getTopUsersByLikes(limit);
+    console.log(topX.length);
+    return topX;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+const getUserTotalLike = async (userId) => {
+  console.log("services");
+  const connection = new DatabaseTransaction();
+  try {
+    const total = await connection.userRepository.getUserTotalLikes(userId);
+    return total;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 
 module.exports = {
   login,
@@ -233,4 +255,6 @@ module.exports = {
   findAllUsers,
   updateUserProfile,
   deactivateUser,
+  getTopXLiked,
+  getUserTotalLike,
 };

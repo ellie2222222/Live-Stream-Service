@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const User = require("../models/UserModel");
 
 class UserRepository {
@@ -104,6 +105,91 @@ class UserRepository {
     } catch (error) {
       throw new Error(`Error verifying user email: ${error.message}`);
     }
+  }
+  async getTopUsersByLikes(limit = 10) {
+    try {
+      const topUsers = await User.aggregate([
+        {
+          // Join with the Stream collection to get user's streams
+          $lookup: {
+            from: "streams", // Stream collection
+            localField: "_id",
+            foreignField: "userId",
+            as: "userStreams",
+          },
+        },
+        {
+          // Unwind userStreams to get individual stream documents; skip users with no streams
+          $unwind: "$userStreams",
+        },
+        {
+          // Calculate total likes for each stream by checking the size of likeBy array
+          $addFields: {
+            totalLikes: { $size: "$userStreams.likeBy" },
+          },
+        },
+        {
+          // Group by user and sum up the total likes across all streams
+          $group: {
+            _id: "$_id",
+            name: { $first: "$name" },
+            email: { $first: "$email" },
+            avatarUrl: { $first: "$avatarUrl" },
+            totalLikes: { $sum: "$totalLikes" }, // Sum total likes across all streams
+          },
+        },
+        {
+          // Sort by total likes in descending order
+          $sort: { totalLikes: -1 },
+        },
+        {
+          // Limit the number of results returned
+          $limit: limit,
+        },
+      ]);
+      console.log(topUsers.length);
+      return topUsers;
+    } catch (error) {
+      throw new Error(`Error getting top users by likes: ${error.message}`);
+    }
+  }
+
+  //total likes of a user
+  async getUserTotalLikes(userId) {
+    console.log("repo");
+    const userTotalLikes = await User.aggregate([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(userId) }, // Use 'new' keyword here
+      },
+      {
+        $lookup: {
+          from: "streams",
+          localField: "_id",
+          foreignField: "userId",
+          as: "userStreams",
+        },
+      },
+      {
+        $unwind: "$userStreams",
+      },
+      { $addFields: { totalLikes: { $size: "$userStreams.likeBy" } } },
+      {
+        $group: {
+          _id: "$_id",
+          totalLikes: { $sum: "$totalLikes" },
+        },
+      },
+    ]);
+
+    if (userTotalLikes.length === 0) {
+      return {
+        id: userId,
+        totalLikes: 0,
+        message: "No streams or likes found for this user",
+      };
+    }
+
+    return userTotalLikes[0];
   }
 }
 module.exports = UserRepository;
