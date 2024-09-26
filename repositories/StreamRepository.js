@@ -168,12 +168,16 @@ class StreamRepository {
       let stream;
 
       if (type.toLowerCase() === "view") {
-        // Sorting by view count
+        // Sorting by view count and populating the userId with name and avatarUrl
         stream = await Stream.find({ endedAt: null })
           .sort({ currentViewCount: -1 })
-          .limit(1);
+          .limit(1)
+          .populate({
+            path: "userId",
+            select: "name avatarUrl", // Only fetch the name and avatarUrl fields from the User document
+          });
       } else if (type.toLowerCase() === "like") {
-        // Sorting by the number of likes (size of likeBy array)
+        // Sorting by the number of likes (size of likeBy array) and populating userId
         const result = await Stream.aggregate([
           { $match: { endedAt: null } }, // Filter for live streams
           { $addFields: { likeCount: { $size: "$likeBy" } } }, // Add a field for the size of likeBy array
@@ -181,7 +185,15 @@ class StreamRepository {
           { $limit: 1 }, // Limit to the top 1 stream
         ]);
 
-        stream = result; // Since aggregation returns an array, pick the first element
+        // If we get a result, find the stream by its ID to populate the userId
+        if (result.length > 0) {
+          stream = await Stream.findById(result[0]._id).populate({
+            path: "userId",
+            select: "name avatarUrl", // Only fetch the name and avatarUrl fields from the User document
+          });
+        } else {
+          stream = null;
+        }
       } else {
         throw new Error(`Unsupported type: ${type}. Use 'view' or 'like'.`);
       }
