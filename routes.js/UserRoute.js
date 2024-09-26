@@ -6,6 +6,11 @@ const upload = require("../middlewares/UploadConfig");
 
 const userRoutes = express.Router();
 
+userRoutes.get(
+  "/users/totalLikes",
+  AuthMiddleware,
+  userController.userTotalLikes
+);
 userRoutes.get("/users/", AuthMiddleware, userController.getUsers);
 userRoutes.get(
   "/users/topUser",

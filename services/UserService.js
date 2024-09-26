@@ -155,6 +155,16 @@ const getTopXLiked = async (x) => {
     throw new Error(error.message);
   }
 };
+const getUserTotalLike = async (userId) => {
+  console.log("services");
+  const connection = new DatabaseTransaction();
+  try {
+    const total = await connection.userRepository.getUserTotalLikes(userId);
+    return total;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 
 module.exports = {
   login,
@@ -164,4 +174,5 @@ module.exports = {
   updateUserProfile,
   deactivateUser,
   getTopXLiked,
+  getUserTotalLike,
 };

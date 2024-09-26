@@ -4,11 +4,13 @@ const {
   deactivateUser,
   findAllUsers,
   getTopXLiked,
+  getUserTotalLike,
 } = require("../services/UserService");
 const {
   uploadToBunny,
   deleteFromBunny,
 } = require("../middlewares/UploadToBunny");
+const { default: mongoose } = require("mongoose");
 
 class UserController {
   // get a user
@@ -93,6 +95,24 @@ class UserController {
       return res
         .status(200)
         .json({ data: users, message: "Success", total: users.length }); // Correct 'users' object
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+  async userTotalLikes(req, res) {
+    const { userId } = req.query;
+
+    console.log(userId); // Ensure the userId is logged correctly
+
+    // Validate if userId is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: "Invalid userId format" });
+    }
+
+    try {
+      // Pass userId directly instead of as an object
+      const totalLikes = await getUserTotalLike(userId);
+      return res.json(totalLikes);
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }

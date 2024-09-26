@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const User = require("../models/UserModel");
 
 class UserRepository {
@@ -133,6 +134,44 @@ class UserRepository {
     } catch (error) {
       throw new Error(`Error getting top users by likes: ${error.message}`);
     }
+  }
+
+  //total likes of a user
+  async getUserTotalLikes(userId) {
+    console.log("repo");
+    const userTotalLikes = await User.aggregate([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(userId) }, // Use 'new' keyword here
+      },
+      {
+        $lookup: {
+          from: "streams",
+          localField: "_id",
+          foreignField: "userId",
+          as: "userStreams",
+        },
+      },
+      {
+        $unwind: "$userStreams",
+      },
+      { $addFields: { totalLikes: { $size: "$userStreams.likeBy" } } },
+      {
+        $group: {
+          _id: "$_id",
+          totalLikes: { $sum: "$totalLikes" },
+        },
+      },
+    ]);
+
+    if (userTotalLikes.length === 0) {
+      return {
+        id: userId,
+        totalLikes: 0,
+        message: "No streams or likes found for this user",
+      };
+    }
+
+    return userTotalLikes[0];
   }
 }
 
