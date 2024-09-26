@@ -1,6 +1,16 @@
-const { uploadToBunny, deleteFromBunny } = require("../middlewares/UploadToBunny");
-const { login, signup } = require("../services/UserService");
+const {
+  uploadToBunny,
+  deleteFromBunny,
+} = require("../middlewares/UploadToBunny");
+const {
+  login,
+  signup,
+  sendVerificationEmail,
+  verifyUserEmail,
+} = require("../services/UserService");
+const mailer = require("../utils/mailer");
 const createAccessToken = require("../utils/createAccessToken");
+const bcrypt = require("bcrypt");
 require("dotenv").config();
 class AuthController {
   // login a user
@@ -29,10 +39,32 @@ class AuthController {
 
     try {
       const user = await signup(name, email, password, bio, avatarFile);
-
+      if (user) {
+        await sendVerificationEmail(user.email);
+      }
       res.status(201).json({ message: "Signup success" });
     } catch (error) {
       return res.status(500).json({ error: error.message });
+    }
+  }
+
+  // verify user email
+  async verifyUserEmail(req, res) {
+    const { email, token } = req.query;
+    try {
+      await verifyUserEmail(email, token, res);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  // resend verification email
+  async resendVerificationEmail(req, res) {
+    const { email } = req.query;
+    try {
+      await sendVerificationEmail(email);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
     }
   }
 }
