@@ -233,20 +233,25 @@ const changePassword = async (userId, oldPassword, newPassword) => {
     if (!user) {
       throw new Error("User not found");
     }
+    if (oldPassword === newPassword) {
+      throw new Error("New password cannot be the same as old password");
+    }
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
       throw new Error("Incorrect old password");
     }
-    if(!validator.isStrongPassword(newPassword, {
-      minLength: 8,
-      minLowercase: 1,
-      minUppercase: 1,
-      minNumbers: 1,
-      minSymbols: 1,
-    })){
+    if (
+      !validator.isStrongPassword(newPassword, {
+        minLength: 8,
+        minLowercase: 1,
+        minUppercase: 1,
+        minNumbers: 1,
+        minSymbols: 1,
+      })
+    ) {
       throw new Error("New password is not strong enough");
     }
-    const salt = 10
+    const salt = 10;
     const hashedPassword = await bcrypt.hash(newPassword, salt);
     await connection.userRepository.changePassword(userId, hashedPassword);
     return user;
