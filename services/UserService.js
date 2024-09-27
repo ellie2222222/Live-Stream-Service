@@ -253,6 +253,9 @@ const changePassword = async (userId, oldPassword, newPassword) => {
     if (!user) {
       throw new Error("User not found");
     }
+    if (oldPassword === newPassword) {
+      throw new Error("New password cannot be the same as old password");
+    }
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
       throw new Error("Incorrect old password");
