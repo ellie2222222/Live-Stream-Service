@@ -12,6 +12,8 @@ const {
   saveStream,
   getStreamByCategory,
   getTop1,
+  searchStreamsByCategory,
+  // searchStreams,
 } = require("../services/StreamService");
 const fs = require("fs");
 require("dotenv").config();
@@ -97,6 +99,23 @@ class StreamController {
       res.status(200).json({ data: streams, message: "Success" });
     } catch (error) {
       res.status(500).json({ error: error.message });
+    }
+  }
+
+  async searchStreams(req, res) {
+    try {
+        const categoryIndex = req.query.categoryIndex;
+
+        const categoryIndexes = Array.isArray(categoryIndex) ? categoryIndex : [categoryIndex];
+
+        const categoryIndexesNumbers = categoryIndexes.map(index => parseInt(index));
+        
+        const title = req.query.title || '';
+
+        const streams = await searchStreamsByCategory(categoryIndexesNumbers, title);
+        res.status(200).json(streams);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
   }
 

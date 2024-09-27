@@ -9,6 +9,8 @@ const streamRoutes = express.Router();
 // Get all streams
 streamRoutes.get("/streams", AuthMiddleware, streamController.getStreams);
 
+streamRoutes.post("/streams/searchStreams", AuthMiddleware, streamController.searchStreams);
+
 // Post new stream
 streamRoutes.post(
   "/streams",

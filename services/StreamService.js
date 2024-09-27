@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 const DatabaseTransaction = require("../repositories/DatabaseTransaction");
 const https = require("https");
+const typesMapping = require("../middlewares/typesMapping");
 
 const getStreamUrl = async (streamId) => {
   try {
@@ -403,9 +404,29 @@ const getTop1 = async (type) => {
     throw new Error(error.message);
   }
 };
+
+const searchStreamsByCategory = async (categoryIndex, title) => {
+  
+  const connection = new DatabaseTransaction();
+
+  const names = categoryIndex.map(index => {
+
+    const category = typesMapping[index]?.name;
+
+    if (!category) {
+      throw new Error("Invalid category index");
+    }
+
+    return category;
+  });
+
+  return await connection.streamRepository.findStreamsByCategory(names, title);
+};
+
 module.exports = {
   findStream,
   findAllStreams,
+  searchStreamsByCategory,
   endStream,
   updateStream,
   saveStream,
@@ -418,4 +439,5 @@ module.exports = {
   deleteFromBunnyCDN,
   getStreamByCategory,
   getTop1,
+  searchStreamsByCategory,
 };

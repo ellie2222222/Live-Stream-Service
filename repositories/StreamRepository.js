@@ -225,6 +225,20 @@ class StreamRepository {
       );
     }
   }
+
+  // Tìm stream theo category
+  async findStreamsByCategory(categoryName, title) {
+    try {
+      const query = {
+        categories: { $all: categoryName },
+        title: { $regex: title, $options: 'i' }
+      };
+      return await Stream.find(query);
+    } catch (error) {
+      throw new Error("Error while fetching streams by category: " + error.message);
+    }
+  }
+  
 }
 
 module.exports = StreamRepository;
