@@ -9,7 +9,6 @@ const {
 const mailer = require("../utils/mailer");
 const { text } = require("express");
 
-
 // Sign up a new user
 const signup = async (name, email, password, bio, img) => {
   let avatarUrl = null;
@@ -227,6 +226,34 @@ const deactivateUser = async (userId) => {
     throw new Error(error.message);
   }
 };
+const changePassword = async (userId, oldPassword, newPassword) => {
+  try {
+    const connection = new DatabaseTransaction();
+    const user = await connection.userRepository.findUserById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      throw new Error("Incorrect old password");
+    }
+    if(!validator.isStrongPassword(newPassword, {
+      minLength: 8,
+      minLowercase: 1,
+      minUppercase: 1,
+      minNumbers: 1,
+      minSymbols: 1,
+    })){
+      throw new Error("New password is not strong enough");
+    }
+    const salt = 10
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    await connection.userRepository.changePassword(userId, hashedPassword);
+    return user;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 const getTopXLiked = async (x) => {
   const connection = new DatabaseTransaction();
   const limit = x || 10;
@@ -254,6 +281,7 @@ module.exports = {
   signup,
   sendVerificationEmail,
   verifyUserEmail,
+  changePassword,
   findUser,
   findAllUsers,
   updateUserProfile,

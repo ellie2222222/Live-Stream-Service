@@ -5,6 +5,7 @@ const {
   findAllUsers,
   getTopXLiked,
   getUserTotalLike,
+  changePassword,
 } = require("../services/UserService");
 const {
   uploadToBunny,
@@ -84,6 +85,20 @@ class UserController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  async changeUserPassword(req, res) {
+    const { userId } = req.params;
+    const { oldPassword, newPassword } = req.body;
+    try {
+      const user = await changePassword(userId, oldPassword, newPassword);
+      if (user) {
+        res.status(200).json({ message: "Password changed successfully" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+  
   async getTopLikedUser(req, res) {
     const { top } = req.query; // Read 'top' from query
     const limit = parseInt(top) || 10; // Default to 10 if not provided

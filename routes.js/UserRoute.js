@@ -31,4 +31,10 @@ userRoutes.get("/users/:userId", AuthMiddleware, userController.getUser);
 
 userRoutes.delete("/users/:userId", AuthMiddleware, userController.deleteUser);
 
+userRoutes.put(
+  "/users/:userId/changePassword",
+  AuthMiddleware,
+  userController.changeUserPassword
+);
+
 module.exports = userRoutes;
