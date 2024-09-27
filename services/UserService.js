@@ -6,6 +6,9 @@ const {
   uploadToBunny,
   deleteFromBunny,
 } = require("../middlewares/UploadToBunny");
+const mailer = require("../utils/mailer");
+const { text } = require("express");
+
 
 // Sign up a new user
 const signup = async (name, email, password, bio, img) => {
@@ -81,6 +84,83 @@ const login = async (email, password) => {
 
     return user;
   } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+const sendVerificationEmail = async (email) => {
+  try {
+    const salt = 10;
+
+    bcrypt.hash(email, salt).then((hashEmail) => {
+      const mailBody = `
+      <div style="width: 40vw;">
+  <table>
+    <tr>
+      <td>
+        <img src="https://amazingtech.vn/Content/amazingtech/assets/img/logo-color.png" width="350" alt="Logo" />
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <p>
+          Thank you for signing up for the live stream application. Please click the link below to fully access our app & activate your account.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <a href="http://localhost:4000/api/auth/verify?email=${email}&token=${hashEmail}">Click here to verify your email</a>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <p style="color: grey;">Please check your spam folder if you don't see the email immediately</p>
+      </td>
+    </tr>
+  </table>
+</div>
+    `;
+      mailer.sendMail(
+        email,
+        "Verify your email",
+        "Click the link below to verify your email",
+        mailBody
+      );
+    });
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+const verifyUserEmail = async (email, token, res) => {
+  const successUrl = "http://localhost:5173/verify/success";
+  const failUrl = "http://localhost:5173/verify/fail";
+  const isVerified = await bcrypt.compare(email, token);
+  try {
+    if (!isVerified) {
+      res.redirect(failUrl);
+      throw new Error("Invalid verification token");
+    }
+
+    const connection = new DatabaseTransaction();
+    try {
+      await connection.startTransaction();
+      const user = await connection.userRepository.findUserByEmail(email);
+      if (!user) {
+        res.redirect(failUrl);
+        throw new Error("User not found");
+      }
+      await connection.userRepository.verifyUserEmail(email);
+      await connection.commitTransaction();
+      res.redirect(successUrl);
+    } catch (error) {
+      await connection.abortTransaction();
+      res.redirect(failUrl);
+      throw new Error(error.message);
+    }
+  } catch (error) {
+    res.redirect(failUrl);
     throw new Error(error.message);
   }
 };
@@ -172,6 +252,8 @@ const getUserTotalLike = async (userId) => {
 module.exports = {
   login,
   signup,
+  sendVerificationEmail,
+  verifyUserEmail,
   findUser,
   findAllUsers,
   updateUserProfile,

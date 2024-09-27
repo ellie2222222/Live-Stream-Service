@@ -4,7 +4,7 @@ const cors = require("cors");
 const http = require("http");
 const NodeMediaServer = require("node-media-server");
 const socketIo = require("socket.io");
-const { saveStreamToBunny } = require("./services/StreamService");
+const { saveStreamToBunny, deleteFromBunnyCDN } = require("./services/StreamService");
 const { createAMessageService } = require("./services/MessageService");
 const { findUser } = require("./services/UserService");
 
@@ -120,17 +120,17 @@ const config = {
 const nms = new NodeMediaServer(config);
 
 // Handle the 'postPublish' event to start saving the stream once it's live
-// nms.on("postPublish", async (_, streamPath, _params) => {
-//   const streamKey = streamPath.split("/").pop();
+nms.on("postPublish", async (_, streamPath, _params) => {
+  const streamKey = streamPath.split("/").pop();
 
-//   try {
-//     await saveStreamToBunny(streamKey);
-//   } catch (error) {
-//     console.error(
-//       `Failed to save stream for key '${streamKey}': ${error.message}`
-//     );
-//   }
-// });
+  try {
+    await deleteFromBunnyCDN(streamKey, null);
+  } catch (error) {
+    console.error(
+      `Failed to save stream for key '${streamKey}': ${error.message}`
+    );
+  }
+});
 
 // // Start the media server
 nms.run();

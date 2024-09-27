@@ -276,12 +276,13 @@ const purgeBunnyCDNCache = async () => {
 // Function to replace .ts file paths in .m3u8 with BunnyCDN URLs
 const replaceTsWithCDN = (m3u8FilePath, cdnUrl, mainFileName, userFolder) => {
   let m3u8Content = fs.readFileSync(m3u8FilePath, "utf8");
-  m3u8Content = m3u8Content.replace(
-    new RegExp(`${mainFileName}-${userFolder}-segment-\\d{3}\\.ts`, "g"),
-    (match) => {
-      return `${cdnUrl}${match}`;
-    }
-  );
+
+  const regex = new RegExp(`${mainFileName}-${userFolder}-segment-\\d+\\.ts`, "g");
+
+  m3u8Content = m3u8Content.replace(regex, (match) => {
+    return `${cdnUrl}/${match}`;
+  });
+
   fs.writeFileSync(m3u8FilePath, m3u8Content);
 };
 
@@ -316,6 +317,7 @@ const saveStreamToBunny = async (userFolder) => {
       throw new Error("Invalid key");
     }
 
+    const timestamp = Date.now();
     inputStream = `${inputURL}/${userFolder}`;
 
     ffmpeg(inputStream)
@@ -323,8 +325,9 @@ const saveStreamToBunny = async (userFolder) => {
       .outputOptions([
         "-hls_time 15",
         "-hls_list_size 0",
-        "-hls_flags delete_segments",
-        `-hls_segment_filename ${outputDir}/${mainFileName}-${userFolder}-segment-%03d.ts`,
+        "-hls_flags append_list",
+        "-strftime 1",
+        `-hls_segment_filename ${outputDir}/${mainFileName}-${userFolder}-segment-%Y%m%d%H%M%S.ts`,
         "-t 30",
         "-f hls",
       ])
@@ -336,10 +339,10 @@ const saveStreamToBunny = async (userFolder) => {
           mainFileName,
           userFolder
         );
-        await deleteFromBunnyCDN(
-          userFolder,
-          `stream-result-${userFolder}.m3u8`
-        );
+        // await deleteFromBunnyCDN(
+        //   userFolder,
+        //   `stream-result-${userFolder}.m3u8`
+        // );
         await uploadToBunnyCDN(
           outputFilename,
           `stream-result-${userFolder}.m3u8`,
@@ -412,6 +415,7 @@ module.exports = {
   likeByUserService,
   createAStreamService,
   saveStreamToBunny,
+  deleteFromBunnyCDN,
   getStreamByCategory,
   getTop1,
 };

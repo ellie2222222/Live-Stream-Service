@@ -8,4 +8,8 @@ authRoutes.post('/auth/login', authController.loginUser);
 
 authRoutes.post('/auth/signup', upload.single('avatar'), authController.signupUser);
 
+authRoutes.get('/auth/verify',authController.verifyUserEmail)
+
+authRoutes.get('/auth/verify/resend',authController.resendVerificationEmail)
+
 module.exports = authRoutes;
