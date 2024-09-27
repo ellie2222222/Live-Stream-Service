@@ -106,6 +106,23 @@ class UserRepository {
       throw new Error(`Error verifying user email: ${error.message}`);
     }
   }
+
+  async changePassword(userId, newPassword) {
+    try {
+      const user = await User.findById(userId);
+
+      if (!user) {
+        throw new Error(`User with ID ${userId} not found`);
+      }
+
+      user.password = newPassword;
+      await user.save();
+
+      return user;
+    } catch (error) {
+      throw new Error(`Error changing user password: ${error.message}`);
+    }
+  }
   async getTopUsersByLikes(limit = 10) {
     try {
       const topUsers = await User.aggregate([
