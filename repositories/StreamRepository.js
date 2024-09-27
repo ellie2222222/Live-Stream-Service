@@ -152,11 +152,31 @@ class StreamRepository {
     try {
       const filter = { categories: category, endedAt: null }; // Filter for ongoing streams only
 
-      const streams = await Stream.find(filter).skip(skip).limit(itemsPerPage);
+      // Find the streams, populate user data, and convert to plain objects
+      const streams = await Stream.find(filter)
+        .skip(skip)
+        .limit(itemsPerPage)
+        .populate({
+          path: "userId",
+          select: "name avatarUrl", // Only select the fields you need
+        })
+        .lean(); // Convert to plain JavaScript objects
+
+      // Add userDetails field to each stream
+      const streamsWithUserDetails = streams.map((stream) => {
+        return {
+          ...stream,
+          userDetails: {
+            name: stream.userId.name,
+            avatarUrl: stream.userId.avatarUrl,
+          },
+          userId: stream.userId._id, // Maintain original userId
+        };
+      });
 
       const totalStreams = await Stream.countDocuments(filter);
 
-      return { streams, totalStreams };
+      return { streams: streamsWithUserDetails, totalStreams };
     } catch (error) {
       throw new Error(`Error getting streams by category: ${error.message}`);
     }

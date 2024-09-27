@@ -191,5 +191,47 @@ class UserRepository {
 
     return userTotalLikes[0];
   }
+
+  async Search(string, limit, page) {
+    const skip = (page - 1) * limit;
+    try {
+      // Fetch the matching users based on the search query with pagination.
+      const users = await User.find({
+        name: { $regex: new RegExp(string, "i") }, // Case-insensitive search using the provided string.
+        isActive: true,
+      })
+        .skip(skip)
+        .limit(limit);
+
+      // If no users are found, return an empty response with the current page.
+      if (!users || users.length === 0) {
+        return {
+          data: [],
+          message: "Success but no user found",
+          page,
+          total: 0,
+        };
+      }
+
+      const totalUsers = await User.countDocuments({
+        name: { $regex: new RegExp(string, "i") },
+      });
+
+      return {
+        data: users,
+        message: "Success",
+        page,
+        total: totalUsers,
+        totalPages: Math.ceil(totalUsers / limit), // Calculate total number of pages.
+      };
+    } catch (error) {
+      return {
+        data: [],
+        message: `Error occurred while searching users: ${error.message}`,
+        page,
+        total: 0,
+      };
+    }
+  }
 }
 module.exports = UserRepository;

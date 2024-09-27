@@ -181,12 +181,15 @@ const findUser = async (userId) => {
   }
 };
 
-const findAllUsers = async (userId) => {
+const findAllUsers = async (searchQuery, limit, page) => {
+  let user;
   try {
     const connection = new DatabaseTransaction();
 
-    const user = await connection.userRepository.findAllActiveUsers();
-
+    if (!searchQuery || !limit || !page)
+      user = await connection.userRepository.findAllActiveUsers();
+    else
+      user = await connection.userRepository.Search(searchQuery, page, limit);
     return user;
   } catch (error) {
     throw new Error(error.message);
