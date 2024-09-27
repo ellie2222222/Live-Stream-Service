@@ -12,7 +12,6 @@ const sendMail = (to, subject, text, html) => {
   });
 
   const options = {
-    from: "lamtienhung93@gmail.com", // sender address
     to: to,
     subject: subject,
     text: text,
