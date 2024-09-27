@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const validator = require("validator");
 const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
 const DatabaseTransaction = require("../repositories/DatabaseTransaction");
 const {
   uploadToBunny,
@@ -279,6 +280,85 @@ const changePassword = async (userId, oldPassword, newPassword) => {
     throw new Error(error.message);
   }
 };
+
+const generateResetPasswordToken = async (userId) => {
+  try {
+    const connection = new DatabaseTransaction();
+    const user = await connection.userRepository.findUserById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    const token = jwt.sign(
+      { userId: userId },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: process.env.PASSWORD_RESET_TOKEN_EXPIRE || "1h" }
+    );
+    user.passwordResetToken = token;
+    await user.save();
+    const mailBody = `
+    <div style="width: 40vw;">
+<table>
+  <tr>
+    <td>
+      <img src="https://amazingtech.vn/Content/amazingtech/assets/img/logo-color.png" width="350" alt="Logo" />
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <p>
+        You have requested to reset your password, click the link below to reset your password. And please note that your link <strong>will be expired in 1 hour</strong> for security reasons.
+      </p>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <a href="http://localhost:5173/reset-password/${token}">Click here to reset your password</a>
+    </td>
+  </tr> 
+  <tr>
+    <td>
+      <p style="color: grey;">Please check your spam folder if you don't see the email immediately</p>
+    </td>
+  </tr>
+</table>
+</div>
+  `;
+    mailer.sendMail(
+      user.email,
+      "Reset your password",
+      "Click the link below to reset your password",
+      mailBody
+    );
+    return user;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+const resetPassword = async (token, newPassword) => {
+  try {
+    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const userId = decodedToken.userId;
+
+    const user = await findUser(userId);
+
+    if (!user || user.passwordResetToken !== token) {
+      throw new Error("Invalid token");
+    }
+
+    const salt = 10;
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    user.password = hashedPassword;
+    user.passwordResetToken = null;
+    await user.save();
+
+    return user;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 const getTopXLiked = async (x) => {
   const connection = new DatabaseTransaction();
   const limit = x || 10;
@@ -306,6 +386,8 @@ module.exports = {
   signup,
   sendVerificationEmail,
   verifyUserEmail,
+  generateResetPasswordToken,
+  resetPassword,
   changePassword,
   findUser,
   findAllUsers,
