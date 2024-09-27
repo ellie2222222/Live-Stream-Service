@@ -278,7 +278,10 @@ const purgeBunnyCDNCache = async () => {
 const replaceTsWithCDN = (m3u8FilePath, cdnUrl, mainFileName, userFolder) => {
   let m3u8Content = fs.readFileSync(m3u8FilePath, "utf8");
 
-  const regex = new RegExp(`${mainFileName}-${userFolder}-segment-\\d+\\.ts`, "g");
+  const regex = new RegExp(
+    `${mainFileName}-${userFolder}-segment-\\d+\\.ts`,
+    "g"
+  );
 
   m3u8Content = m3u8Content.replace(regex, (match) => {
     return `${cdnUrl}/${match}`;
@@ -406,20 +409,19 @@ const getTop1 = async (type) => {
 };
 
 const searchStreamsByCategory = async (categoryIndex, title) => {
-  
   const connection = new DatabaseTransaction();
+  let names = [];
+  if (categoryIndex && categoryIndex.length > 0) {
+    names = categoryIndex.map((index) => {
+      const category = typesMapping[index]?.name;
 
-  const names = categoryIndex.map(index => {
+      if (!category) {
+        throw new Error("Invalid category index");
+      }
 
-    const category = typesMapping[index]?.name;
-
-    if (!category) {
-      throw new Error("Invalid category index");
-    }
-
-    return category;
-  });
-
+      return category;
+    });
+  }
   return await connection.streamRepository.findStreamsByCategory(names, title);
 };
 
