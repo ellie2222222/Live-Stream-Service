@@ -35,16 +35,20 @@ const streamSchema = new Schema(
       required: true,
       default: false,
     },
-    likeBy: [{
-      type: mongoose.Types.ObjectId,
-      ref: "User"
-    }],
+    likeBy: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     categories: [
       {
         type: String,
         required: true,
       },
     ],
-  }, { timestamps: true })
+  },
+  { timestamps: true }
+);
 
 module.exports = mongoose.model("Stream", streamSchema);

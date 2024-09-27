@@ -1,4 +1,5 @@
 const { uploadToBunny } = require("../middlewares/UploadToBunny");
+const typesMapping = require("../middlewares/typesMapping");
 const {
   deleteStream,
   updateStream,
@@ -9,6 +10,8 @@ const {
   likeByUserService,
   createAStreamService,
   saveStream,
+  getStreamByCategory,
+  getTop1,
 } = require("../services/StreamService");
 const typesMapping = require("../middlewares/typesMapping");
 const fs = require("fs");
@@ -28,14 +31,16 @@ class StreamController {
         return res.status(500).json({ error: "Types mapping is not defined" });
       }
 
+      // Correct the structure to avoid nesting the name and image
       const categories = Object.entries(typesMapping).map(([key, value]) => ({
         id: key,
-        name: value,
+        name: value.name, // Directly access the name
+        image: value.image, // Directly access the image
       }));
 
       res.status(200).json({ data: categories, message: "Success" });
     } catch (error) {
-      console.error("Error in getCate:", error.message);
+      console.error("Error in getCategories:", error.message);
       res.status(500).json({ error: error.message });
     }
   }
@@ -80,7 +85,7 @@ class StreamController {
 
   // get all streams
   async getStreams(req, res) {
-    const { isStreaming } = req.query;
+    const { page, size, isStreaming } = req.query;
     const query = {};
 
     if (isStreaming) {
@@ -88,7 +93,7 @@ class StreamController {
     }
 
     try {
-      const streams = await findAllStreams(query);
+      const streams = await findAllStreams(page, size, query);
 
       res.status(200).json({ data: streams, message: "Success" });
     } catch (error) {
@@ -175,6 +180,10 @@ class StreamController {
       res
         .status(200)
         .json({ data: stream, message: "Stream updated successfully" });
+
+      res
+        .status(200)
+        .json({ data: stream, message: "Stream updated successfully" });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -208,6 +217,37 @@ class StreamController {
     try {
       const response = await likeByUserService(streamId, userId);
       res.status(200).json({ message: "Success" });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async getStreamByCategory(req, res) {
+    const { category } = req.query; // Get category from query params
+    const page = parseInt(req.query.page) || 1; // Pagination: default to 1
+    const itemsPerPage = parseInt(req.query.itemsPerPage) || 10; // Default page size
+
+    try {
+      // Call the service layer to get the streams and total count
+      const result = await getStreamByCategory(category, page, itemsPerPage);
+      res.status(200).json(result); // Send the result to the client
+    } catch (error) {
+      // If an error occurs, send a 500 status with the error message
+      res.status(500).json({ error: error.message });
+    }
+  }
+  async getTop1(req, res) {
+    const { type } = req.query;
+    let query;
+    console.log("controller is called, type: ", type);
+    if (type === null) {
+      query === "like";
+    } else {
+      query = type;
+    }
+    try {
+      const result = await getTop1(query);
+      res.status(200).json(result);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

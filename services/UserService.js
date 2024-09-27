@@ -10,6 +10,7 @@ const {
 // Sign up a new user
 const signup = async (name, email, password, bio, img) => {
   let avatarUrl = null;
+
   try {
     const connection = new DatabaseTransaction();
 
@@ -143,6 +144,49 @@ const deactivateUser = async (userId) => {
     throw new Error(error.message);
   }
 };
+const getTopXLiked = async (x) => {
+  const connection = new DatabaseTransaction();
+  const limit = x || 10;
+  try {
+    const topX = await connection.userRepository.getTopUsersByLikes(limit);
+    console.log(topX.length);
+    return topX;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+const getUserTotalLike = async (userId) => {
+  console.log("services");
+  const connection = new DatabaseTransaction();
+  try {
+    const total = await connection.userRepository.getUserTotalLikes(userId);
+    return total;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+const followAStreamerByIdService = async (userId, streamerId) => {
+  const connection = new DatabaseTransaction();
+  try {
+    const result = await connection.userRepository.followAStreamerByIdRepo(
+      userId,
+      streamerId
+    );
+    return result;
+  } catch (error) {}
+};
+
+const unfollowAStreamerByIdService = async (userId, streamerId) => {
+  const connection = new DatabaseTransaction();
+  try {
+    const result = await connection.userRepository.unfollowAStreamerByIdRepo(
+      userId,
+      streamerId
+    );
+    return result;
+  } catch (error) {}
+};
 
 module.exports = {
   login,
@@ -151,4 +195,8 @@ module.exports = {
   findAllUsers,
   updateUserProfile,
   deactivateUser,
+  getTopXLiked,
+  getUserTotalLike,
+  followAStreamerByIdService,
+  unfollowAStreamerByIdService,
 };

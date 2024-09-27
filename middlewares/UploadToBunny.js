@@ -17,6 +17,14 @@ const uploadToBunny = async (file) => {
     const fileName = `${timestamp}-${file.originalname}`;
 
     const uploadUrl = `https://${storageUrl}/${zoneName}/${fileName}`;
+
+    const response = await axios.put(uploadUrl, fileStream, {
+      headers: {
+        "Content-Type": file.mimetype,
+        AccessKey: password,
+      },
+    });
+    const uploadUrl = `https://${storageUrl}/${zoneName}/${fileName}`;
     console.log(uploadUrl);
 
     // Thực hiện yêu cầu tải lên
@@ -27,7 +35,9 @@ const uploadToBunny = async (file) => {
       },
     });
 
-    return `https://${cdn}/${fileName}`;
+    const imageUrl = `https://${cdn}/${fileName}`;
+
+    return imageUrl;
   } catch (error) {
     throw new Error(error.message);
   }

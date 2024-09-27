@@ -87,7 +87,7 @@ class StreamRepository {
   }
 
   // Get all streams
-  async getAllStreams(query) {
+  async getAllStreams(pageSize, pageNumber, query) {
     try {
       const filters = { isDeleted: false, ...query };
 
@@ -131,6 +131,64 @@ class StreamRepository {
     } catch (error) {
       console.error("Error adding user to likeBy:", error);
       return false;
+    }
+  }
+  async getStreamsByCategory(category, page = 1, itemsPerPage = 10) {
+    const skip = (page - 1) * itemsPerPage;
+    try {
+      const filter = { categories: category, endedAt: null }; // Filter for ongoing streams only
+
+      const streams = await Stream.find(filter).skip(skip).limit(itemsPerPage);
+
+      const totalStreams = await Stream.countDocuments(filter);
+
+      return { streams, totalStreams };
+    } catch (error) {
+      throw new Error(`Error getting streams by category: ${error.message}`);
+    }
+  }
+
+  async CurrentlyTop1(type) {
+    console.log("repo is called, type: ", type);
+    try {
+      let stream;
+
+      if (type.toLowerCase() === "view") {
+        // Sorting by view count and populating the userId with name and avatarUrl
+        stream = await Stream.find({ endedAt: null })
+          .sort({ currentViewCount: -1 })
+          .limit(1)
+          .populate({
+            path: "userId",
+            select: "name avatarUrl", // Only fetch the name and avatarUrl fields from the User document
+          });
+      } else if (type.toLowerCase() === "like") {
+        // Sorting by the number of likes (size of likeBy array) and populating userId
+        const result = await Stream.aggregate([
+          { $match: { endedAt: null } }, // Filter for live streams
+          { $addFields: { likeCount: { $size: "$likeBy" } } }, // Add a field for the size of likeBy array
+          { $sort: { likeCount: -1 } }, // Sort by likeCount (descending)
+          { $limit: 1 }, // Limit to the top 1 stream
+        ]);
+
+        // If we get a result, find the stream by its ID to populate the userId
+        if (result.length > 0) {
+          stream = await Stream.findById(result[0]._id).populate({
+            path: "userId",
+            select: "name avatarUrl", // Only fetch the name and avatarUrl fields from the User document
+          });
+        } else {
+          stream = null;
+        }
+      } else {
+        throw new Error(`Unsupported type: ${type}. Use 'view' or 'like'.`);
+      }
+
+      return stream;
+    } catch (error) {
+      throw new Error(
+        `Error getting top 1 stream for ${type}: ${error.message}`
+      );
     }
   }
 }

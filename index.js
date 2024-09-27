@@ -9,6 +9,7 @@ const { createAMessageService } = require("./services/MessageService");
 const { findUser } = require("./services/UserService");
 
 // Initialize application and server
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
@@ -121,19 +122,19 @@ const config = {
 const nms = new NodeMediaServer(config);
 
 // Handle the 'postPublish' event to start saving the stream once it's live
-nms.on("postPublish", async (_, streamPath, _params) => {
-  const streamKey = streamPath.split("/").pop();
+// nms.on("postPublish", async (_, streamPath, _params) => {
+//   const streamKey = streamPath.split("/").pop();
 
-  try {
-    await saveStreamToBunny(streamKey);
-  } catch (error) {
-    console.error(
-      `Failed to save stream for key '${streamKey}': ${error.message}`
-    );
-  }
-});
+//   try {
+//     await saveStreamToBunny(streamKey);
+//   } catch (error) {
+//     console.error(
+//       `Failed to save stream for key '${streamKey}': ${error.message}`
+//     );
+//   }
+// });
 
-// Start the media server
+// // Start the media server
 nms.run();
 
 // Start server
