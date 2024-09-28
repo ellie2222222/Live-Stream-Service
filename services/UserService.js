@@ -90,10 +90,26 @@ const login = async (email, password) => {
 
 const sendVerificationEmail = async (email) => {
   try {
-    const salt = 10;
+    const connection = new DatabaseTransaction();
 
-    bcrypt.hash(email, salt).then((hashEmail) => {
-      const mailBody = `
+    const user = await connection.userRepository.findUserByEmail(email);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    if (user.verify === true) {
+      throw new Error("Email is already verified");
+    }
+
+    const salt = 10;
+    const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: process.env.EMAIL_VERIFICATION_EXPIRE || "24h",
+    });
+
+    user.verifyToken = token;
+    await user.save();
+
+    const mailBody = `
       <div style="width: 40vw;">
   <table>
     <tr>
@@ -110,7 +126,7 @@ const sendVerificationEmail = async (email) => {
     </tr>
     <tr>
       <td>
-        <a href="http://localhost:4000/api/auth/verify?email=${email}&token=${hashEmail}">Click here to verify your email</a>
+        <a href="http://localhost:4000/api/auth/verify?token=${token}">Click here to verify your email</a>
       </td>
     </tr>
     <tr>
@@ -121,44 +137,36 @@ const sendVerificationEmail = async (email) => {
   </table>
 </div>
     `;
-      mailer.sendMail(
-        email,
-        "Verify your email",
-        "Click the link below to verify your email",
-        mailBody
-      );
-    });
+    mailer.sendMail(
+      email,
+      "Verify your email",
+      "Click the link below to verify your email",
+      mailBody
+    );
   } catch (error) {
     throw new Error(error.message);
   }
 };
 
-const verifyUserEmail = async (email, token, res) => {
+const verifyUserEmail = async (token, res) => {
   const successUrl = "http://localhost:5173/verify/success";
   const failUrl = "http://localhost:5173/verify/fail";
-  const isVerified = await bcrypt.compare(email, token);
+
   try {
-    if (!isVerified) {
-      res.redirect(failUrl);
-      throw new Error("Invalid verification token");
-    }
+    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const email = decodedToken.email;
 
     const connection = new DatabaseTransaction();
-    try {
-      await connection.startTransaction();
-      const user = await connection.userRepository.findUserByEmail(email);
-      if (!user) {
-        res.redirect(failUrl);
-        throw new Error("User not found");
-      }
-      await connection.userRepository.verifyUserEmail(email);
-      await connection.commitTransaction();
-      res.redirect(successUrl);
-    } catch (error) {
-      await connection.abortTransaction();
+    const user = await connection.userRepository.findUserByEmail(email);
+    if (!user || user.verifyToken !== token) {
       res.redirect(failUrl);
-      throw new Error(error.message);
+      throw new Error("Invalid token");
     }
+
+    user.verify = true;
+    user.verifyToken = null;
+    await user.save();
+    res.redirect(successUrl);
   } catch (error) {
     res.redirect(failUrl);
     throw new Error(error.message);
