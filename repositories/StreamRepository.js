@@ -36,7 +36,11 @@ class StreamRepository {
   // Get a stream by ID
   async getStreamById(streamId) {
     try {
-      const stream = await Stream.findOne({ _id: streamId, isDeleted: false });
+      const stream = await Stream.findOne({ _id: streamId, isDeleted: false })
+      .populate({
+        path: "userId",
+        select: "name avatarUrl", 
+      });;
 
       if (!stream) {
         throw new Error("Stream not found");
