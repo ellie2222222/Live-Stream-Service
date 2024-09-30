@@ -8,6 +8,8 @@ const {
   changePassword,
   generateResetPasswordToken,
   resetPassword,
+  followAStreamerByIdService,
+  unfollowAStreamerByIdService,
 } = require("../services/UserService");
 const {
   uploadToBunny,
@@ -156,6 +158,44 @@ class UserController {
       // Pass userId directly instead of as an object
       const totalLikes = await getUserTotalLike(userId);
       return res.json(totalLikes);
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  async followAStreamerById(req, res) {
+    const { userId, streamerId } = req.params;
+    if (
+      !mongoose.Types.ObjectId.isValid(userId) ||
+      !mongoose.Types.ObjectId.isValid(streamerId)
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Invalid userId or streamerId format" });
+    }
+
+    try {
+      await followAStreamerByIdService(userId, streamerId);
+      return res.status(200).json("Follow successfully");
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  async unfollowAStreamerById(req, res) {
+    const { userId, streamerId } = req.params;
+    if (
+      !mongoose.Types.ObjectId.isValid(userId) ||
+      !mongoose.Types.ObjectId.isValid(streamerId)
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Invalid userId or streamerId format" });
+    }
+
+    try {
+      await unfollowAStreamerByIdService(userId, streamerId);
+      return res.status(200).json("Unfollow successfully");
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }

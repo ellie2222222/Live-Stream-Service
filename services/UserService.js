@@ -394,6 +394,28 @@ const getUserTotalLike = async (userId) => {
   }
 };
 
+const followAStreamerByIdService = async (userId, streamerId) => {
+  const connection = new DatabaseTransaction();
+  try {
+    const result = await connection.userRepository.followAStreamerByIdRepo(
+      userId,
+      streamerId
+    );
+    return result;
+  } catch (error) {}
+};
+
+const unfollowAStreamerByIdService = async (userId, streamerId) => {
+  const connection = new DatabaseTransaction();
+  try {
+    const result = await connection.userRepository.unfollowAStreamerByIdRepo(
+      userId,
+      streamerId
+    );
+    return result;
+  } catch (error) {}
+};
+
 module.exports = {
   login,
   signup,
@@ -408,4 +430,6 @@ module.exports = {
   deactivateUser,
   getTopXLiked,
   getUserTotalLike,
+  followAStreamerByIdService,
+  unfollowAStreamerByIdService,
 };

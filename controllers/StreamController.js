@@ -168,7 +168,7 @@ class StreamController {
 
   // Create a stream
   async startStream(req, res) {
-    const { title, description, categories, userId, email } = req.body;
+    const { title, categories, userId, email } = req.body;
     const thumbnailFile = req.file;
 
     if (!thumbnailFile) {

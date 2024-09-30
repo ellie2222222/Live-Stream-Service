@@ -30,6 +30,18 @@ const userSchema = new Schema(
       type: String,
       default: "",
     },
+    follow: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    followBy: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     isActive: {
       type: Boolean,
       required: true,

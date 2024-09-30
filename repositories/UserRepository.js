@@ -76,7 +76,9 @@ class UserRepository {
   // Find a user by ID
   async findUserById(userId) {
     try {
-      const user = await User.findOne({ _id: userId, isActive: true });
+      const user = await User.findOne({ _id: userId, isActive: true }).populate(
+        ["follow", "followBy"]
+      );
 
       if (!user) {
         throw new Error(
@@ -259,6 +261,55 @@ class UserRepository {
         page,
         total: 0,
       };
+    }
+  }
+
+  async followAStreamerByIdRepo(userId, streamerId) {
+    try {
+      const streamer = await User.findOne({ _id: streamerId });
+      const user = await User.findOne({ _id: userId });
+
+      if (!streamer || !user) {
+        throw new Error("Streamer or User are not found");
+      }
+
+      await User.updateOne(
+        { _id: streamerId },
+        { $addToSet: { followBy: userId } }
+      );
+
+      await User.updateOne(
+        { _id: userId },
+        { $addToSet: { follow: streamerId } }
+      );
+      console.log(`User ${userId} follows streamer with id ${streamerId}`);
+      return true;
+    } catch (error) {
+      console.error("Error adding user to followBy: ", error);
+      return false;
+    }
+  }
+
+  async unfollowAStreamerByIdRepo(userId, streamerId) {
+    try {
+      const streamer = await User.findOne({ _id: streamerId });
+      const user = await User.findOne({ _id: userId });
+
+      if (!streamer || !user) {
+        throw new Error("Streamer or User are not found");
+      }
+
+      await User.updateOne(
+        { _id: streamerId },
+        { $pull: { followBy: userId } }
+      );
+
+      await User.updateOne({ _id: userId }, { $pull: { follow: streamerId } });
+      console.log(`User ${userId} unfollows streamer with id ${streamerId}`);
+      return true;
+    } catch (error) {
+      console.error("Error adding user to followBy: ", error);
+      return false;
     }
   }
 }

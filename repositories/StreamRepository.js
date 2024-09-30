@@ -119,10 +119,7 @@ class StreamRepository {
         throw new Error("Stream not found");
       }
 
-      await Stream.updateOne(
-        { _id: streamId },
-        { $pull: { likeBy: userId } } // Use $pull to remove userId from likeBy array
-      );
+      await Stream.updateOne({ _id: streamId }, { $pull: { likeBy: userId } });
       console.log(`User ${userId} removed from likeBy of stream ${streamId}`);
       return true;
     } catch (error) {
@@ -139,10 +136,7 @@ class StreamRepository {
         throw new Error("Stream not found");
       }
 
-      await Stream.updateOne(
-        { _id: streamId },
-        { $addToSet: { likeBy: userId } }
-      );
+      await Stream.updateOne({ _id: streamId }, { $push: { likeBy: userId } });
 
       console.log(`User ${userId} added to likeBy of stream ${streamId}`);
       return true;

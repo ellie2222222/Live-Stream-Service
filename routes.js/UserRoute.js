@@ -20,6 +20,16 @@ userRoutes.get(
   userController.getTopLikedUser
 );
 
+userRoutes.put(
+  "/users/follow/:userId/:streamerId",
+  userController.followAStreamerById
+);
+
+userRoutes.put(
+  "/users/unfollow/:userId/:streamerId",
+  userController.unfollowAStreamerById
+);
+
 userRoutes.patch(
   "/users/:userId",
   AuthMiddleware,

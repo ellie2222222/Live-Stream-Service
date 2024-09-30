@@ -51,12 +51,13 @@ io.on("connection", (socket) => {
 
   socket.on("send_message", async (data) => {
     const { roomId, message, userId } = data;
-    console.log(data);
+
     await createAMessageService(userId, roomId, message.text);
     const user = await findUser(userId);
     io.to(roomId).emit("new_message", {
       sender: user.name,
       text: message.text,
+      avatar: user.avatarUrl,
     });
   });
 
@@ -82,6 +83,7 @@ function handleLeaveRoom(socket, roomId) {
 
 function updateViewersCount(roomId) {
   const viewersCount = io.sockets.adapter.rooms.get(roomId)?.size || 0;
+  updateStream(roomId, { currentViewCount: viewersCount });
   io.to(roomId).emit("viewers_count", viewersCount);
 }
 
@@ -123,8 +125,8 @@ const config = {
 const nms = new NodeMediaServer(config);
 
 // Handle the 'postPublish' event to start saving the stream once it's live
-nms.on("postPublish", async (_, streamPath, _params) => {
-  const streamKey = streamPath.split("/").pop();
+// nms.on("postPublish", async (_, streamPath, _params) => {
+//   const streamKey = streamPath.split("/").pop();
 
   try {
     await deleteFromBunnyCDN(streamKey, null);
@@ -148,7 +150,7 @@ nms.on('donePublish', (id, streamPath) => {
   }
 });
 
-// Start the media server
+// // Start the media server
 nms.run();
 
 // Start server
