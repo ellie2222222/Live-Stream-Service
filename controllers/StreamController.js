@@ -275,16 +275,14 @@ class StreamController {
   }
 
   async getStreamByCategory(req, res) {
-    const { category } = req.query; // Get category from query params
-    const page = parseInt(req.query.page) || 1; // Pagination: default to 1
-    const itemsPerPage = parseInt(req.query.itemsPerPage) || 10; // Default page size
+    const { category } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
 
     try {
-      // Call the service layer to get the streams and total count
       const result = await getStreamByCategory(category, page, itemsPerPage);
-      res.status(200).json(result); // Send the result to the client
+      res.status(200).json(result);
     } catch (error) {
-      // If an error occurs, send a 500 status with the error message
       res.status(500).json({ error: error.message });
     }
   }
