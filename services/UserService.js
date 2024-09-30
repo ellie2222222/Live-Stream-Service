@@ -185,14 +185,19 @@ const findAllUsers = async (searchQuery, limit, page) => {
   try {
     const connection = new DatabaseTransaction();
 
-    if (!searchQuery || !limit || !page) {
+    if (!searchQuery) {
       // Case when there's no search query (returns all active users)
-      userResponse = await connection.userRepository.findAllActiveUsers();
+      userResponse = await connection.userRepository.findAllActiveUsers(
+        limit,
+        page
+      );
 
       return {
-        data: userResponse, // Normalize the structure here
+        data: userResponse,
         message: "Success",
-        total: userResponse.length, // Total number of active users
+        total: userResponse.total,
+        totalPages: userResponse.totalPages,
+        page: userResponse.page,
       };
     } else {
       // Case when there's a search query (uses pagination and search)

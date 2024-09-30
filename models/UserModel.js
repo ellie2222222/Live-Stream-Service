@@ -31,16 +31,17 @@ const userSchema = new Schema(
       default: "",
     },
     isActive: {
-        type: Boolean,
-        required: true,
-        default: true,
+      type: Boolean,
+      required: true,
+      default: true,
     },
     verify: {
-        type: Boolean,
-        required: true,
-        default: false,
+      type: Boolean,
+      required: true,
+      default: false,
     },
-}, {timestamps: true})
-
+  },
+  { timestamps: true }
+);
 
 module.exports = mongoose.model("User", userSchema);

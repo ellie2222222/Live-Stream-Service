@@ -31,8 +31,8 @@ class UserController {
   async getUsers(req, res) {
     const { page, limit, searchQuery } = req.query;
     try {
-      const user = await findAllUsers(searchQuery, page, limit);
-      res.status(200).json({ data: user, message: "Success" });
+      const users = await findAllUsers(searchQuery, limit, page);
+      res.status(200).json({ data: users, message: "Success" });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -98,7 +98,7 @@ class UserController {
       res.status(500).json({ error: error.message });
     }
   }
-  
+
   async getTopLikedUser(req, res) {
     const { top } = req.query; // Read 'top' from query
     const limit = parseInt(top) || 10; // Default to 10 if not provided
