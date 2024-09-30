@@ -63,7 +63,9 @@ class UserRepository {
   // Find a user by ID
   async findUserById(userId) {
     try {
-      const user = await User.findOne({ _id: userId, isActive: true });
+      const user = await User.findOne({ _id: userId, isActive: true }).populate(
+        ["follow", "followBy"]
+      );
 
       if (!user) {
         throw new Error(

@@ -13,7 +13,6 @@ const {
   getStreamByCategory,
   getTop1,
 } = require("../services/StreamService");
-const typesMapping = require("../middlewares/typesMapping");
 const fs = require("fs");
 require("dotenv").config();
 

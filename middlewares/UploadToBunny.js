@@ -24,16 +24,7 @@ const uploadToBunny = async (file) => {
         AccessKey: password,
       },
     });
-    const uploadUrl = `https://${storageUrl}/${zoneName}/${fileName}`;
     console.log(uploadUrl);
-
-    // Thực hiện yêu cầu tải lên
-    const response = await axios.put(uploadUrl, fileStream, {
-      headers: {
-        "Content-Type": file.mimetype,
-        AccessKey: password,
-      },
-    });
 
     const imageUrl = `https://${cdn}/${fileName}`;
 
