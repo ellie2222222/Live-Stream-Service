@@ -164,7 +164,6 @@ const createAStreamService = async (
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
-const moment = require("moment");
 const ffmpeg = require("fluent-ffmpeg");
 
 const outputDir = os.tmpdir();
@@ -292,14 +291,14 @@ const replaceTsWithCDN = (m3u8FilePath, cdnUrl, mainFileName, userFolder) => {
 
 // Function to upload .ts segment files
 async function uploadTsFiles(mainFileName, userFolder) {
-  const files = fs.readdirSync(outputDir);
+  const files = fs.readdirSync(`${outputDir}/live-stream-playlist/${userFolder}`);
   for (const file of files) {
     if (
       file.endsWith(".ts") &&
       file.includes(mainFileName) &&
       file.includes(userFolder)
     ) {
-      const filePath = path.join(outputDir, file);
+      const filePath = path.join(`${outputDir}/live-stream-playlist/${userFolder}`, file);
       const fileName = path.basename(file);
       await uploadToBunnyCDN(filePath, fileName, userFolder);
     }
@@ -310,10 +309,16 @@ let inputURL = "rtmp://localhost:1935/live";
 
 // Function to save the stream using FFmpeg
 const saveStreamToBunny = async (userFolder) => {
+  const folderPath = path.join(outputDir, `live-stream-playlist/${userFolder}`);
+  if (!fs.existsSync(folderPath)) {
+    fs.mkdirSync(folderPath, { recursive: true });
+  }
   const mainFileName = "stream-result";
-  const outputFilename = `${outputDir}/${mainFileName}.m3u8`;
-  const hostName =
-    process.env.BUNNYCDN_HOSTNAME || "live-stream-platform.b-cdn.net";
+  const outputFilename = `${outputDir}/live-stream-playlist/${userFolder}/${mainFileName}.m3u8`;
+  console.log(outputFilename);
+  
+  const hostName = process.env.BUNNYCDN_HOSTNAME || "live-stream-platform.b-cdn.net";
+  
   try {
     const connection = new DatabaseTransaction();
     const email = await connection.userRepository.findUserByEmail(userFolder);
@@ -327,11 +332,12 @@ const saveStreamToBunny = async (userFolder) => {
     ffmpeg(inputStream)
       .inputFormat("flv")
       .outputOptions([
+        "-c copy",
         "-hls_time 15",
         "-hls_list_size 0",
         "-hls_flags append_list",
         "-strftime 1",
-        `-hls_segment_filename ${outputDir}/${mainFileName}-${userFolder}-segment-%Y%m%d%H%M%S.ts`,
+        `-hls_segment_filename ${outputDir}/live-stream-playlist/${userFolder}/${mainFileName}-${userFolder}-segment-%Y%m%d%H%M%S.ts`,
         "-t 30",
         "-f hls",
       ])
@@ -343,10 +349,6 @@ const saveStreamToBunny = async (userFolder) => {
           mainFileName,
           userFolder
         );
-        // await deleteFromBunnyCDN(
-        //   userFolder,
-        //   `stream-result-${userFolder}.m3u8`
-        // );
         await uploadToBunnyCDN(
           outputFilename,
           `stream-result-${userFolder}.m3u8`,

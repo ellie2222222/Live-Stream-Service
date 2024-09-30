@@ -6,6 +6,8 @@ const {
   getTopXLiked,
   getUserTotalLike,
   changePassword,
+  generateResetPasswordToken,
+  resetPassword,
 } = require("../services/UserService");
 const {
   uploadToBunny,
@@ -93,6 +95,32 @@ class UserController {
       const user = await changePassword(userId, oldPassword, newPassword);
       if (user) {
         res.status(200).json({ message: "Password changed successfully" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async generateResetUserPasswordToken(req, res) {
+    const { userId } = req.body;
+    try {
+      const user = await generateResetPasswordToken(userId);
+      if (user) {
+        res.status(200).json({ message: "Password reset successfully" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async resetUserPassword(req, res) {
+    const { token } = req.params;
+    const { newPassword } = req.body;
+
+    try {
+      const user = await resetPassword(token, newPassword);
+      if (user) {
+        res.status(200).json({ message: "Password reset successfully" });
       }
     } catch (error) {
       res.status(500).json({ error: error.message });

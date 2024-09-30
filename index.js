@@ -4,6 +4,8 @@ const cors = require("cors");
 const http = require("http");
 const NodeMediaServer = require("node-media-server");
 const socketIo = require("socket.io");
+const os = require('os');
+const fs = require('fs');
 const { saveStreamToBunny, deleteFromBunnyCDN } = require("./services/StreamService");
 const { createAMessageService } = require("./services/MessageService");
 const { findUser } = require("./services/UserService");
@@ -88,6 +90,7 @@ const authRoutes = require("./routes.js/AuthRoute");
 const userRoutes = require("./routes.js/UserRoute");
 const streamRoutes = require("./routes.js/StreamRoute");
 const messageRoutes = require("./routes.js/MessageRoute");
+const path = require("path");
 
 // Router
 app.use("/api", authRoutes);
@@ -132,7 +135,20 @@ nms.on("postPublish", async (_, streamPath, _params) => {
   }
 });
 
-// // Start the media server
+nms.on('donePublish', (id, streamPath) => {
+  const streamKey = streamPath.split('/').pop();
+  const folderPath = path.join(os.tmpdir(), 'live-stream-playlist', streamKey);
+
+  try {
+    // Remove the folder and its contents
+    fs.rmSync(folderPath, { recursive: true, force: true });
+    console.log(`Deleted folder: ${folderPath}`);
+  } catch (error) {
+    console.error(`Failed to delete folder: ${folderPath}`, error);
+  }
+});
+
+// Start the media server
 nms.run();
 
 // Start server

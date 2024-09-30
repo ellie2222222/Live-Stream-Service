@@ -50,9 +50,9 @@ class AuthController {
 
   // verify user email
   async verifyUserEmail(req, res) {
-    const { email, token } = req.query;
+    const { token } = req.query;
     try {
-      await verifyUserEmail(email, token, res);
+      await verifyUserEmail(token, res);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

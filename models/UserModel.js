@@ -40,6 +40,14 @@ const userSchema = new Schema(
       required: true,
       default: false,
     },
+    verifyToken: {
+      type: String,
+      default: "",
+    },
+    passwordResetToken: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );
