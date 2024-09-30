@@ -6,7 +6,7 @@ const NodeMediaServer = require("node-media-server");
 const socketIo = require("socket.io");
 const os = require('os');
 const fs = require('fs');
-const { saveStreamToBunny, deleteFromBunnyCDN } = require("./services/StreamService");
+const { saveStreamToBunny, deleteFromBunnyCDN, updateStream } = require("./services/StreamService");
 const { createAMessageService } = require("./services/MessageService");
 const { findUser } = require("./services/UserService");
 
@@ -125,8 +125,8 @@ const config = {
 const nms = new NodeMediaServer(config);
 
 // Handle the 'postPublish' event to start saving the stream once it's live
-// nms.on("postPublish", async (_, streamPath, _params) => {
-//   const streamKey = streamPath.split("/").pop();
+nms.on("postPublish", async (_, streamPath, _params) => {
+  const streamKey = streamPath.split("/").pop();
 
   try {
     await deleteFromBunnyCDN(streamKey, null);

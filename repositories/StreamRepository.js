@@ -39,7 +39,7 @@ class StreamRepository {
       const stream = await Stream.findOne({ _id: streamId, isDeleted: false })
       .populate({
         path: "userId",
-        select: "name avatarUrl", 
+        select: "name avatarUrl followBy", 
       });;
 
       if (!stream) {

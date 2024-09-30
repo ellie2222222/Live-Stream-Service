@@ -3,7 +3,6 @@ const StreamController = require("../controllers/StreamController");
 const AuthMiddleware = require("../middlewares/AuthMiddleware");
 const streamController = new StreamController();
 const upload = require("../middlewares/UploadConfig");
-const upload = require("../middlewares/UploadConfig");
 
 const streamRoutes = express.Router();
 

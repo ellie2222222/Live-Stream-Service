@@ -127,31 +127,6 @@ class StreamController {
       res.status(500).json({ message: error.message });
     }
   }
-  async searchStreams(req, res) {
-    try {
-      const categoryIndex = req.query.categoryIndex;
-
-      const categoryIndexes = categoryIndex
-        ? Array.isArray(categoryIndex)
-          ? categoryIndex
-          : [categoryIndex]
-        : [];
-
-      const categoryIndexesNumbers = categoryIndexes.map((index) =>
-        parseInt(index)
-      );
-
-      const title = req.query.title || "";
-
-      const streams = await searchStreamsByCategory(
-        categoryIndexesNumbers,
-        title
-      );
-      res.status(200).json(streams);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  }
 
   async saveStream(req, res) {
     const { streamId } = req.params;
