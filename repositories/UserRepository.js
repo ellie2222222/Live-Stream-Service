@@ -51,11 +51,23 @@ class UserRepository {
   }
 
   // Find a user by ID
-  async findAllActiveUsers() {
+  async findAllActiveUsers(limit, page) {
+    const skip = (page - 1) * limit;
     try {
-      const user = await User.find({ isActive: true });
+      // Count total active users
+      const totalUsers = await User.countDocuments({ isActive: true });
 
-      return user;
+      // Fetch active users with pagination
+      const users = await User.find({ isActive: true }).skip(skip).limit(limit);
+
+      // Return data along with pagination details
+      return {
+        data: users,
+        message: "Success",
+        page,
+        total: totalUsers,
+        totalPages: Math.ceil(totalUsers / limit), // Calculate total number of pages
+      };
     } catch (error) {
       throw new Error(`Error finding all active users: ${error.message}`);
     }
@@ -164,7 +176,7 @@ class UserRepository {
           $limit: limit,
         },
       ]);
-      console.log(topUsers.length);
+
       return topUsers;
     } catch (error) {
       throw new Error(`Error getting top users by likes: ${error.message}`);
@@ -173,7 +185,6 @@ class UserRepository {
 
   //total likes of a user
   async getUserTotalLikes(userId) {
-    console.log("repo");
     const userTotalLikes = await User.aggregate([
       {
         $match: { _id: new mongoose.Types.ObjectId(userId) }, // Use 'new' keyword here
@@ -212,13 +223,13 @@ class UserRepository {
   async Search(string, limit, page) {
     const skip = (page - 1) * limit;
     try {
-      // Fetch the matching users based on the search query with pagination.
       const users = await User.find({
-        name: { $regex: new RegExp(string, "i") }, // Case-insensitive search using the provided string.
+        name: { $regex: new RegExp(string, "i") },
         isActive: true,
       })
         .skip(skip)
-        .limit(limit);
+        .limit(limit)
+        .select("-password -updatedAt -username -verify"); // Exclude these fields
 
       // If no users are found, return an empty response with the current page.
       if (!users || users.length === 0) {

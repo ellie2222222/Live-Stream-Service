@@ -238,7 +238,21 @@ class StreamRepository {
         title: { $regex: title, $options: "i" },
         endedAt: null,
       };
-      return await Stream.find(query);
+      const streams = await Stream.find(query).populate({
+        path: "userId",
+        select: "name avatarUrl",
+      });
+
+      const result = streams.map((stream) => ({
+        ...stream.toObject(),
+        userId: stream.userId._id,
+        userDetails: {
+          name: stream.userId.name,
+          avatarUrl: stream.userId.avatarUrl,
+        },
+      }));
+
+      return result;
     } catch (error) {
       throw new Error(
         "Error while fetching streams by category: " + error.message
