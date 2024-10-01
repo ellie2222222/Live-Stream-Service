@@ -49,13 +49,11 @@ userRoutes.put(
 
 userRoutes.post(
   "/users/resetPassword",
-  AuthMiddleware,
   userController.generateResetUserPasswordToken
 );
 
 userRoutes.post(
   "/users/resetPassword/:token",
-  AuthMiddleware,
   userController.resetUserPassword
 );
 module.exports = userRoutes;

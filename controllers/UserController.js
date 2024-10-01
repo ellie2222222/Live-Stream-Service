@@ -104,9 +104,9 @@ class UserController {
   }
 
   async generateResetUserPasswordToken(req, res) {
-    const { userId } = req.body;
+    const { email } = req.body;
     try {
-      const user = await generateResetPasswordToken(userId);
+      const user = await generateResetPasswordToken(email);
       if (user) {
         res.status(200).json({ message: "Password reset successfully" });
       }

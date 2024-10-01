@@ -294,18 +294,16 @@ const changePassword = async (userId, oldPassword, newPassword) => {
   }
 };
 
-const generateResetPasswordToken = async (userId) => {
+const generateResetPasswordToken = async (email) => {
   try {
     const connection = new DatabaseTransaction();
-    const user = await connection.userRepository.findUserById(userId);
+    const user = await connection.userRepository.findUserByEmail(email);
     if (!user) {
       throw new Error("User not found");
     }
-    const token = jwt.sign(
-      { userId: userId },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: process.env.PASSWORD_RESET_TOKEN_EXPIRE || "1h" }
-    );
+    const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: process.env.PASSWORD_RESET_TOKEN_EXPIRE || "1h",
+    });
     user.passwordResetToken = token;
     await user.save();
     const mailBody = `
@@ -337,7 +335,7 @@ const generateResetPasswordToken = async (userId) => {
 </div>
   `;
     mailer.sendMail(
-      user.email,
+      email,
       "Reset your password",
       "Click the link below to reset your password",
       mailBody
@@ -351,9 +349,10 @@ const generateResetPasswordToken = async (userId) => {
 const resetPassword = async (token, newPassword) => {
   try {
     const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    const userId = decodedToken.userId;
+    const email = decodedToken.email;
 
-    const user = await findUser(userId);
+    const connection = new DatabaseTransaction();
+    const user = await connection.userRepository.findUserByEmail(email);
 
     if (!user || user.passwordResetToken !== token) {
       throw new Error("Invalid token");
