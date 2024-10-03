@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/ellie2222222/live-stream-service#readme",
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "axios": "^1.7.7",
     "basic-ftp": "^5.0.5",
     "bcrypt": "^5.1.1",
