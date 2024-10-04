@@ -1,4 +1,4 @@
-const Message = require("../models/MessageModel");
+import Message from "../models/MessageModel.js";
 class MessageRepository {
   // Create a new message
   async createMessage(data, session) {
@@ -78,4 +78,4 @@ class MessageRepository {
   }
 }
 
-module.exports = MessageRepository;
+export default MessageRepository;

@@ -1,5 +1,7 @@
-const jwt = require("jsonwebtoken");
-require("dotenv").config();
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const createAccessToken = (_id) => {
   return jwt.sign({ _id }, process.env.ACCESS_TOKEN_SECRET, {
@@ -7,4 +9,4 @@ const createAccessToken = (_id) => {
   });
 };
 
-module.exports = createAccessToken;
+export default createAccessToken;

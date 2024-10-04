@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
@@ -21,7 +22,7 @@
   "dependencies": {
     "axios": "^1.7.7",
     "basic-ftp": "^5.0.5",
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.20.0",
@@ -29,13 +30,15 @@
     "https": "^1.0.0",
     "jsonwebtoken": "^9.0.2",
     "live-stream-service": "file:",
+    "livekit-server-sdk": "^2.6.2",
     "moment": "^2.30.1",
     "mongoose": "^8.6.1",
     "multer": "^1.4.5-lts.1",
-    "node-media-server": "^2.7.0",
+    "node-media-server": "^2.6.6",
     "nodemailer": "^6.9.15",
     "nodemon": "^3.1.4",
     "socket.io": "^4.7.5",
+    "uuid": "^10.0.0",
     "validator": "^13.12.0"
   }
 }

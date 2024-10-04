@@ -1,6 +1,6 @@
-const multer = require('multer');
-const path = require('path');
-const uploadToBunny = require('./UploadToBunny');
+import multer from 'multer';
+import path from 'path';
+import { uploadToBunny } from './UploadToBunny.js';
 
 const storage = multer.memoryStorage();
 
@@ -21,4 +21,4 @@ const upload = multer({
     limits: { fileSize: 10000000 } // 10MB
 });
 
-module.exports = upload;
+export default upload;

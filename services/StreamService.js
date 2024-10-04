@@ -1,10 +1,10 @@
-const bcrypt = require("bcrypt");
-const mongoose = require("mongoose");
-const DatabaseTransaction = require("../repositories/DatabaseTransaction");
-const https = require("https");
-const typesMapping = require("../middlewares/typesMapping");
+import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
+import DatabaseTransaction from "../repositories/DatabaseTransaction.js"; 
+import https from "https";
+import typesMapping from "../middlewares/typesMapping.js";
 
-const getStreamUrl = async (streamId) => {
+export const getStreamUrl = async (streamId) => {
   try {
     const connection = new DatabaseTransaction();
     const stream = await connection.streamRepository.getStreamById(streamId);
@@ -15,7 +15,7 @@ const getStreamUrl = async (streamId) => {
   }
 };
 
-const findStream = async (streamId) => {
+export const findStream = async (streamId) => {
   try {
     const connection = new DatabaseTransaction();
 
@@ -31,7 +31,7 @@ const findStream = async (streamId) => {
   }
 };
 
-const findAllStreams = async (page, size, query) => {
+export const findAllStreams = async (page, size, query) => {
   try {
     const connection = new DatabaseTransaction();
 
@@ -50,7 +50,7 @@ const findAllStreams = async (page, size, query) => {
   }
 };
 
-const updateStream = async (streamId, updateData) => {
+export const updateStream = async (streamId, updateData) => {
   try {
     const connection = new DatabaseTransaction();
 
@@ -69,7 +69,7 @@ const updateStream = async (streamId, updateData) => {
   }
 };
 
-const deleteStream = async (streamId) => {
+export const deleteStream = async (streamId) => {
   try {
     const connection = new DatabaseTransaction();
 
@@ -85,7 +85,7 @@ const deleteStream = async (streamId) => {
   }
 };
 
-const endStream = async (streamId) => {
+export const endStream = async (streamId) => {
   try {
     const connection = new DatabaseTransaction();
 
@@ -110,7 +110,7 @@ const endStream = async (streamId) => {
   }
 };
 
-const dislikeByUserService = async (streamId, userId) => {
+export const dislikeByUserService = async (streamId, userId) => {
   try {
     const connection = new DatabaseTransaction();
     if (!mongoose.Types.ObjectId.isValid(streamId)) {
@@ -124,7 +124,7 @@ const dislikeByUserService = async (streamId, userId) => {
   } catch (error) {}
 };
 
-const likeByUserService = async (streamId, userId) => {
+export const likeByUserService = async (streamId, userId) => {
   try {
     const connection = new DatabaseTransaction();
     if (!mongoose.Types.ObjectId.isValid(streamId)) {
@@ -138,7 +138,7 @@ const likeByUserService = async (streamId, userId) => {
   } catch (error) {}
 };
 
-const createAStreamService = async (
+export const createAStreamService = async (
   userId,
   title,
   categories,
@@ -161,15 +161,15 @@ const createAStreamService = async (
   }
 };
 
-const fs = require("fs");
-const path = require("path");
-const os = require("os");
-const ffmpeg = require("fluent-ffmpeg");
+import fs from "fs";
+import path from "path";
+import os from "os";
+import ffmpeg from "fluent-ffmpeg";
 
 const outputDir = os.tmpdir();
 
 // Function to upload a file to BunnyCDN
-const uploadToBunnyCDN = async (filePath, fileName, userFolder) => {
+export const uploadToBunnyCDN = async (filePath, fileName, userFolder) => {
   const readStream = fs.createReadStream(filePath);
   const storageZone = process.env.BUNNYCDN_STORAGE_ZONE_NAME;
 
@@ -200,7 +200,7 @@ const uploadToBunnyCDN = async (filePath, fileName, userFolder) => {
 };
 
 // Function to delete folder from BunnyCDN
-const deleteFromBunnyCDN = async (userFolder, fileName) => {
+export const deleteFromBunnyCDN = async (userFolder, fileName) => {
   const storageZone = process.env.BUNNYCDN_STORAGE_ZONE_NAME;
 
   let path = "";
@@ -308,7 +308,7 @@ async function uploadTsFiles(mainFileName, userFolder) {
 let inputURL = "rtmp://localhost:1935/live";
 
 // Function to save the stream using FFmpeg
-const saveStreamToBunny = async (userFolder) => {
+export const saveStreamToBunny = async (userFolder) => {
   const folderPath = path.join(outputDir, `live-stream-playlist/${userFolder}`);
   if (!fs.existsSync(folderPath)) {
     fs.mkdirSync(folderPath, { recursive: true });
@@ -366,7 +366,7 @@ const saveStreamToBunny = async (userFolder) => {
   }
 };
 
-const saveStream = async (streamId, userId) => {
+export const saveStream = async (streamId, userId) => {
   if (!mongoose.Types.ObjectId.isValid(streamId)) {
     return res.status(400).json({ error: "Invalid stream ID" });
   }
@@ -384,7 +384,7 @@ const saveStream = async (streamId, userId) => {
   }
 };
 
-const getStreamByCategory = async (category, page = 1, itemsPerPage = 10) => {
+export const getStreamByCategory = async (category, page = 1, itemsPerPage = 10) => {
   try {
     const connection = new DatabaseTransaction();
     const { streams, totalStreams } =
@@ -398,9 +398,8 @@ const getStreamByCategory = async (category, page = 1, itemsPerPage = 10) => {
     throw new Error(error.message);
   }
 };
-const getTop1 = async (type) => {
-  console.log("services is called, type: ", type);
 
+export const getTop1 = async (type) => {
   try {
     const connection = new DatabaseTransaction();
     const stream = await connection.streamRepository.CurrentlyTop1(type);
@@ -410,7 +409,7 @@ const getTop1 = async (type) => {
   }
 };
 
-const searchStreamsByCategory = async (categoryIndex, title) => {
+export const searchStreamsByCategory = async (categoryIndex, title) => {
   const connection = new DatabaseTransaction();
   let names = [];
   if (categoryIndex && categoryIndex.length > 0) {
@@ -427,21 +426,21 @@ const searchStreamsByCategory = async (categoryIndex, title) => {
   return await connection.streamRepository.findStreamsByCategory(names, title);
 };
 
-module.exports = {
-  findStream,
-  findAllStreams,
-  searchStreamsByCategory,
-  endStream,
-  updateStream,
-  saveStream,
-  deleteStream,
-  getStreamUrl,
-  dislikeByUserService,
-  likeByUserService,
-  createAStreamService,
-  saveStreamToBunny,
-  deleteFromBunnyCDN,
-  getStreamByCategory,
-  getTop1,
-  searchStreamsByCategory,
-};
+// module.exports = {
+//   findStream,
+//   findAllStreams,
+//   searchStreamsByCategory,
+//   endStream,
+//   updateStream,
+//   saveStream,
+//   deleteStream,
+//   getStreamUrl,
+//   dislikeByUserService,
+//   likeByUserService,
+//   createAStreamService,
+//   saveStreamToBunny,
+//   deleteFromBunnyCDN,
+//   getStreamByCategory,
+//   getTop1,
+//   searchStreamsByCategory,
+// };

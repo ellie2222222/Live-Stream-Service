@@ -1,29 +1,31 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const http = require("http");
-const NodeMediaServer = require("node-media-server");
-const socketIo = require("socket.io");
-const os = require('os');
-const fs = require('fs');
-const { saveStreamToBunny, deleteFromBunnyCDN, updateStream } = require("./services/StreamService");
-const { createAMessageService } = require("./services/MessageService");
-const { findUser } = require("./services/UserService");
+import 'dotenv/config'; // Use this to load .env variables
+import express, { query } from 'express';
+import cors from 'cors';
+import http from 'http';
+import NodeMediaServer from 'node-media-server';
+import { Server as socketIo } from 'socket.io';
+import os from 'os';
+import fs from 'fs';
+import path from 'path';
+import { saveStreamToBunny, deleteFromBunnyCDN, updateStream } from './services/StreamService.js';
+import { createAMessageService } from './services/MessageService.js';
+import { findUser } from './services/UserService.js';
+
 
 // Initialize application and server
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, {
+const io = new socketIo(server, {
   cors: {
-    origin: [process.env.PRODUCTION_PORT, "http://localhost:5173"],
+    origin: "*",
     methods: ["GET", "POST"],
   },
 });
 // Middleware
 app.use(
   cors({
-    origin: [process.env.PRODUCTION_PORT, "http://localhost:5173"],
+    origin: "*",
     methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -88,17 +90,18 @@ function updateViewersCount(roomId) {
 }
 
 // Import routes
-const authRoutes = require("./routes.js/AuthRoute");
-const userRoutes = require("./routes.js/UserRoute");
-const streamRoutes = require("./routes.js/StreamRoute");
-const messageRoutes = require("./routes.js/MessageRoute");
-const path = require("path");
+import authRoutes from "./routes/AuthRoute.js";
+import userRoutes from "./routes/UserRoute.js";
+import streamRoutes from "./routes/StreamRoute.js";
+import messageRoutes from "./routes/MessageRoute.js";
+import ingressRoute from "./routes/ingressRoute.js";
 
 // Router
 app.use("/api", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api", streamRoutes);
 app.use("/api", messageRoutes);
+app.use("/api", ingressRoute);
 
 // Log API requests
 app.use((req, res, next) => {
@@ -150,8 +153,57 @@ nms.on('donePublish', (id, streamPath) => {
   }
 });
 
-// // Start the media server
+// Start the media server
 nms.run();
+
+// LiveKit User Authentication
+const liveKitRoute = express.Router();
+
+import { v4 } from "uuid";
+
+const createViewerToken = async (queryData) => {
+  try {
+    const guestId = v4();
+    const guestUserName = `guest#${Math.floor(Math.random() * 1000)}`
+
+    let user = null;
+    if (!queryData.userId) {
+      user = await findUser(queryData.userId);
+    }
+
+    const isHost = queryData.hostId === queryData.userId;
+
+    const { AccessToken } = await import("livekit-server-sdk");
+
+    const at = new AccessToken(process.env.LIVEKIT_API_KEY, process.env.LIVEKIT_API_SECRET, {
+      identity: isHost ? `host-${queryData.hostId}` : guestId,
+      name: isHost ? `host`: guestUserName,
+    });
+    at.addGrant({ 
+      roomJoin: true, 
+      room: queryData.hostId,
+      canPublish: false,
+      canPublishData: true,
+    });
+
+    return await at.toJwt();
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+liveKitRoute.get('/viewer-token', async (req, res) => {
+  const { userId, streamId, hostId } = req.query;
+  const queryData = { userId, streamId, hostId }
+
+  try {
+    res.status(200).json(await createViewerToken(queryData));
+  } catch (error) {
+    res.status(500).json({error: error.message})
+  }
+});
+
+app.use("/api", liveKitRoute);
 
 // Start server
 const port = process.env.DEVELOPMENT_PORT || 4000;

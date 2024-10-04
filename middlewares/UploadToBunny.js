@@ -1,10 +1,10 @@
-const axios = require("axios");
-const stream = require("stream");
-require("dotenv").config();
+import axios from "axios";
+import stream from "stream";
+import dotenv from "dotenv";
 
-const uploadToBunny = async (file) => {
-  console.log("meomeo");
+dotenv.config();
 
+export const uploadToBunny = async (file) => {
   try {
     const zoneName = process.env.BUNNYCDN_STORAGE_ZONE_NAME;
     const password = process.env.BUNNYCDN_STORAGE_PASSWORD;
@@ -16,16 +16,16 @@ const uploadToBunny = async (file) => {
     const timestamp = Date.now();
     const fileName = `${timestamp}-${file.originalname}`;
 
-        const uploadUrl = `https://${storageUrl}/${zoneName}/${fileName}`;
+    const uploadUrl = `https://${storageUrl}/${zoneName}/${fileName}`;
 
-        const response = await axios.put(uploadUrl, fileStream, {
-            headers: {
-                'Content-Type': file.mimetype,
-                'AccessKey': password,
-            }
-        });
+    const response = await axios.put(uploadUrl, fileStream, {
+      headers: {
+        'Content-Type': file.mimetype,
+        'AccessKey': password,
+      }
+    });
 
-        const imageUrl = `https://${cdn}/${fileName}`;
+    const imageUrl = `https://${cdn}/${fileName}`;
 
     return imageUrl;
   } catch (error) {
@@ -33,15 +33,15 @@ const uploadToBunny = async (file) => {
   }
 };
 
-const deleteFromBunny = async (fileUrl) => {
-    try {
-        if(fileUrl === null || fileUrl === undefined) {
-            return;
-        }
-        const fileName = fileUrl.split('/').pop();
-        if (!fileName) {
-            throw new Error("File name could not be extracted from URL");
-        }
+export const deleteFromBunny = async (fileUrl) => {
+  try {
+    if (fileUrl === null || fileUrl === undefined) {
+      return;
+    }
+    const fileName = fileUrl.split('/').pop();
+    if (!fileName) {
+      throw new Error("File name could not be extracted from URL");
+    }
 
     const zoneName = process.env.BUNNYCDN_STORAGE_ZONE_NAME;
     const password = process.env.BUNNYCDN_STORAGE_PASSWORD;
@@ -58,9 +58,4 @@ const deleteFromBunny = async (fileUrl) => {
     console.error("Error deleting file:", error.message);
     throw error;
   }
-};
-
-module.exports = {
-  uploadToBunny,
-  deleteFromBunny,
 };

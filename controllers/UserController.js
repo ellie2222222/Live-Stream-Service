@@ -1,4 +1,4 @@
-const {
+import {
   findUser,
   updateUserProfile,
   deactivateUser,
@@ -10,28 +10,24 @@ const {
   resetPassword,
   followAStreamerByIdService,
   unfollowAStreamerByIdService,
-} = require("../services/UserService");
-const {
-  uploadToBunny,
-  deleteFromBunny,
-} = require("../middlewares/UploadToBunny");
-const { default: mongoose } = require("mongoose");
+} from "../services/UserService.js";
+import { uploadToBunny, deleteFromBunny } from "../middlewares/UploadToBunny.js";
+import mongoose from "mongoose";
 
 class UserController {
-  // get a user
+  // Get a user
   async getUser(req, res) {
     const { userId } = req.params;
 
     try {
       const user = await findUser(userId);
-
       res.status(200).json({ data: user, message: "Success" });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   }
 
-  // get all users
+  // Get all users
   async getUsers(req, res) {
     const { page, limit, searchQuery } = req.query;
     try {
@@ -42,7 +38,7 @@ class UserController {
     }
   }
 
-  // update a user
+  // Update a user
   async updateUser(req, res) {
     const { name, bio, isActive } = req.body;
     const img = req.file ? req.file : null;
@@ -78,18 +74,19 @@ class UserController {
     }
   }
 
+  // Delete a user
   async deleteUser(req, res) {
     const { userId } = req.params;
 
     try {
       await deactivateUser(userId);
-
       res.status(200).json({ message: "Success" });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   }
 
+  // Change user password
   async changeUserPassword(req, res) {
     const { userId } = req.params;
     const { oldPassword, newPassword } = req.body;
@@ -103,6 +100,7 @@ class UserController {
     }
   }
 
+  // Generate reset password token
   async generateResetUserPasswordToken(req, res) {
     const { userId } = req.body;
     try {
@@ -115,6 +113,7 @@ class UserController {
     }
   }
 
+  // Reset user password
   async resetUserPassword(req, res) {
     const { token } = req.params;
     const { newPassword } = req.body;
@@ -129,6 +128,7 @@ class UserController {
     }
   }
 
+  // Get top liked user
   async getTopLikedUser(req, res) {
     const { top } = req.query; // Read 'top' from query
     const limit = parseInt(top) || 10; // Default to 10 if not provided
@@ -139,11 +139,13 @@ class UserController {
       }
       return res
         .status(200)
-        .json({ data: users, message: "Success", total: users.length }); // Correct 'users' object
+        .json({ data: users, message: "Success", total: users.length });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
   }
+
+  // Get user total likes
   async userTotalLikes(req, res) {
     const { userId } = req.query;
 
@@ -155,7 +157,6 @@ class UserController {
     }
 
     try {
-      // Pass userId directly instead of as an object
       const totalLikes = await getUserTotalLike(userId);
       return res.json(totalLikes);
     } catch (error) {
@@ -163,6 +164,7 @@ class UserController {
     }
   }
 
+  // Follow a streamer by ID
   async followAStreamerById(req, res) {
     const { userId, streamerId } = req.params;
     if (
@@ -182,6 +184,7 @@ class UserController {
     }
   }
 
+  // Unfollow a streamer by ID
   async unfollowAStreamerById(req, res) {
     const { userId, streamerId } = req.params;
     if (
@@ -202,4 +205,4 @@ class UserController {
   }
 }
 
-module.exports = UserController;
+export default UserController;

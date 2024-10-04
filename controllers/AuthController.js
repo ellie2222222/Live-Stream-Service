@@ -1,17 +1,12 @@
-const {
-  uploadToBunny,
-  deleteFromBunny,
-} = require("../middlewares/UploadToBunny");
-const {
-  login,
-  signup,
-  sendVerificationEmail,
-  verifyUserEmail,
-} = require("../services/UserService");
-const mailer = require("../utils/mailer");
-const createAccessToken = require("../utils/createAccessToken");
-const bcrypt = require("bcrypt");
-require("dotenv").config();
+import { uploadToBunny, deleteFromBunny } from "../middlewares/UploadToBunny.js";
+import { login, signup, sendVerificationEmail, verifyUserEmail } from "../services/UserService.js";
+import mailer from "../utils/mailer.js";
+import createAccessToken from "../utils/createAccessToken.js";
+import bcrypt from "bcryptjs";
+import dotenv from "dotenv";
+
+dotenv.config();
+
 class AuthController {
   // login a user
   async loginUser(req, res) {
@@ -19,7 +14,6 @@ class AuthController {
 
     try {
       const user = await login(email, password);
-
       const accessToken = createAccessToken(user._id);
 
       res.status(200).json({ accessToken, message: "Login success" });
@@ -68,4 +62,5 @@ class AuthController {
     }
   }
 }
-module.exports = AuthController;
+
+export default AuthController;

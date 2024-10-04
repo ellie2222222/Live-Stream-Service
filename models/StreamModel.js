@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const Schema = mongoose.Schema;
 
@@ -11,7 +11,13 @@ const streamSchema = new Schema(
       maxlength: [100, "Title cannot exceed 100 characters"],
       default: "",
     },
+    ingressId: {
+      type: String,
+    },
     streamUrl: {
+      type: String,
+    },
+    streamKey: {
       type: String,
     },
     thumbnailUrl: {
@@ -51,4 +57,4 @@ const streamSchema = new Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Stream", streamSchema);
+export default mongoose.model("Stream", streamSchema);

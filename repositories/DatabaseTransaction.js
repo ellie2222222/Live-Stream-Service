@@ -1,7 +1,7 @@
-const BaseDatabaseTransaction = require("./BaseDatabaseTransaction");
-const MessageRepository = require("./MessageRepository");
-const StreamRepository = require("./StreamRepository");
-const UserRepository = require("./UserRepository");
+import BaseDatabaseTransaction from "./BaseDatabaseTransaction.js";
+import MessageRepository from "./MessageRepository.js";
+import StreamRepository from "./StreamRepository.js";
+import UserRepository from "./UserRepository.js";
 
 class DatabaseTransaction extends BaseDatabaseTransaction {
     constructor() {
@@ -12,4 +12,4 @@ class DatabaseTransaction extends BaseDatabaseTransaction {
     }
 }
 
-module.exports = DatabaseTransaction
+export default DatabaseTransaction;

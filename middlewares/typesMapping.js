@@ -46,4 +46,4 @@ const typesMapping = {
   },
 };
 
-module.exports = typesMapping;
+export default typesMapping;

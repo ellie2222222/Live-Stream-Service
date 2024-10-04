@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
-const DatabaseTransaction = require("../repositories/DatabaseTransaction");
+import mongoose from "mongoose";
+import DatabaseTransaction from "../repositories/DatabaseTransaction.js";
 
-const findMessage = async (messageId) => {
+export const findMessage = async (messageId) => {
   try {
     const connection = new DatabaseTransaction();
 
@@ -19,7 +19,7 @@ const findMessage = async (messageId) => {
   }
 };
 
-const findAllMessagesByStreamId = async (streamId) => {
+export const findAllMessagesByStreamId = async (streamId) => {
   try {
     const connection = new DatabaseTransaction();
 
@@ -32,7 +32,7 @@ const findAllMessagesByStreamId = async (streamId) => {
   }
 };
 
-const updateMessageService = async (messageId, updateData) => {
+export const updateMessageService = async (messageId, updateData) => {
   try {
     const connection = new DatabaseTransaction();
 
@@ -47,7 +47,7 @@ const updateMessageService = async (messageId, updateData) => {
   }
 };
 
-const deleteMessageService = async (messageId) => {
+export const deleteMessageService = async (messageId) => {
   try {
     const connection = new DatabaseTransaction();
     if (!mongoose.Types.ObjectId.isValid(messageId)) {
@@ -60,7 +60,7 @@ const deleteMessageService = async (messageId) => {
   }
 };
 
-const createAMessageService = async (userId, streamId, content) => {
+export const createAMessageService = async (userId, streamId, content) => {
   try {
     const connection = new DatabaseTransaction();
     const response = await connection.messageRepository.createMessage({
@@ -71,12 +71,4 @@ const createAMessageService = async (userId, streamId, content) => {
   } catch (error) {
     throw new Error(error.message);
   }
-};
-
-module.exports = {
-  createAMessageService,
-  findMessage,
-  findAllMessagesByStreamId,
-  updateMessageService,
-  deleteMessageService,
 };

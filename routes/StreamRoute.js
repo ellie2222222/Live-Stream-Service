@@ -1,14 +1,13 @@
-const express = require("express");
-const StreamController = require("../controllers/StreamController");
-const AuthMiddleware = require("../middlewares/AuthMiddleware");
-const streamController = new StreamController();
-const upload = require("../middlewares/UploadConfig");
+import express from "express";
+import StreamController from "../controllers/StreamController.js";
+import AuthMiddleware from "../middlewares/AuthMiddleware.js";
+import upload from "../middlewares/UploadConfig.js";
 
+const streamController = new StreamController();
 const streamRoutes = express.Router();
 
 // Get all streams
 streamRoutes.get("/streams", AuthMiddleware, streamController.getStreams);
-
 streamRoutes.post("/streams/searchStreams", AuthMiddleware, streamController.searchStreams);
 
 // Post new stream
@@ -83,4 +82,4 @@ streamRoutes.get(
   streamController.getStreamUrl
 );
 
-module.exports = streamRoutes;
+export default streamRoutes;

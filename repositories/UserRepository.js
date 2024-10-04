@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const User = require("../models/UserModel");
+import mongoose from "mongoose";
+import User from "../models/UserModel.js";
 
 class UserRepository {
   // Create a new user
@@ -313,4 +313,4 @@ class UserRepository {
     }
   }
 }
-module.exports = UserRepository;
+export default UserRepository;

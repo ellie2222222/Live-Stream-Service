@@ -1,5 +1,5 @@
-const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose');
+import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 
 const AuthMiddleware = async (req, res, next) => {
     const { authorization } = req.headers;
@@ -33,4 +33,4 @@ const AuthMiddleware = async (req, res, next) => {
 };
 
 
-module.exports = AuthMiddleware;
+export default AuthMiddleware;

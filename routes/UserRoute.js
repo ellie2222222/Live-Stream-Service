@@ -1,9 +1,9 @@
-const express = require("express");
-const UserController = require("../controllers/UserController");
-const AuthMiddleware = require("../middlewares/AuthMiddleware");
-const userController = new UserController();
-const upload = require("../middlewares/UploadConfig");
+import express from "express";
+import UserController from "../controllers/UserController.js";
+import AuthMiddleware from "../middlewares/AuthMiddleware.js";
+import upload from "../middlewares/UploadConfig.js";
 
+const userController = new UserController();
 const userRoutes = express.Router();
 
 userRoutes.get("/users/all", AuthMiddleware, userController.getUsers);
@@ -58,4 +58,5 @@ userRoutes.post(
   AuthMiddleware,
   userController.resetUserPassword
 );
-module.exports = userRoutes;
+
+export default userRoutes;

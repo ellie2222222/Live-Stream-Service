@@ -1,5 +1,4 @@
-const Stream = require("../models/StreamModel");
-
+import Stream from "../models/StreamModel.js";
 class StreamRepository {
   // Create a new stream
   async createStream(data, session) {
@@ -39,8 +38,8 @@ class StreamRepository {
       const stream = await Stream.findOne({ _id: streamId, isDeleted: false })
       .populate({
         path: "userId",
-        select: "name avatarUrl followBy", 
-      });;
+        select: "-password",
+      });
 
       if (!stream) {
         throw new Error("Stream not found");
@@ -181,7 +180,6 @@ class StreamRepository {
   }
 
   async CurrentlyTop1(type) {
-    console.log("repo is called, type: ", type);
     try {
       let stream;
 
@@ -255,4 +253,4 @@ class StreamRepository {
   }
 }
 
-module.exports = StreamRepository;
+export default StreamRepository;

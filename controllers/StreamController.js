@@ -1,6 +1,6 @@
-const { uploadToBunny } = require("../middlewares/UploadToBunny");
-const typesMapping = require("../middlewares/typesMapping");
-const {
+import { uploadToBunny } from "../middlewares/UploadToBunny.js";
+import typesMapping from "../middlewares/typesMapping.js";
+import {
   deleteStream,
   updateStream,
   endStream,
@@ -13,10 +13,11 @@ const {
   getStreamByCategory,
   getTop1,
   searchStreamsByCategory,
-  // searchStreams,
-} = require("../services/StreamService");
-const fs = require("fs");
-require("dotenv").config();
+} from "../services/StreamService.js";
+import fs from "fs";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const BUNNY_CDN_URL =
   process.env.BUNNY_STORAGE_URL ||
@@ -32,11 +33,10 @@ class StreamController {
         return res.status(500).json({ error: "Types mapping is not defined" });
       }
 
-      // Correct the structure to avoid nesting the name and image
       const categories = Object.entries(typesMapping).map(([key, value]) => ({
         id: key,
-        name: value.name, // Directly access the name
-        image: value.image, // Directly access the image
+        name: value.name,
+        image: value.image,
       }));
 
       res.status(200).json({ data: categories, message: "Success" });
@@ -50,11 +50,9 @@ class StreamController {
     try {
       const { streamId, action, email } = req.body;
 
-      const likeStream = await likeStreamService(streamId, action, email);
+      const likeStream = await likeByUserService(streamId, action, email);
 
-      res
-        .status(201)
-        .json({ like: likeStream, message: "CreateStream success" });
+      res.status(201).json({ like: likeStream, message: "CreateStream success" });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -72,7 +70,6 @@ class StreamController {
     }
   }
 
-  // get a stream
   async getStream(req, res) {
     const { streamId } = req.params;
     try {
@@ -84,7 +81,6 @@ class StreamController {
     }
   }
 
-  // get all streams
   async getStreams(req, res) {
     const { page, size, isStreaming } = req.query;
     const query = {};
@@ -141,7 +137,6 @@ class StreamController {
     }
   }
 
-  // Create a stream
   async startStream(req, res) {
     const { title, categories, userId, email } = req.body;
     const thumbnailFile = req.file;
@@ -151,7 +146,6 @@ class StreamController {
     }
 
     try {
-      // Upload thumbnail to Bunny CDN
       const thumbnailUrl = await uploadToBunny(thumbnailFile);
 
       const bunnyStorageCdn =
@@ -166,16 +160,13 @@ class StreamController {
         streamUrl
       );
 
-      res
-        .status(201)
-        .json({ message: "Stream created successfully", data: stream });
+      res.status(201).json({ message: "Stream created successfully", data: stream });
     } catch (error) {
       console.error("Error starting stream:", error.message);
       res.status(500).json({ error: error.message });
     }
   }
 
-  // end a stream
   async endStream(req, res) {
     const { streamId } = req.params;
 
@@ -188,7 +179,6 @@ class StreamController {
     }
   }
 
-  // update a stream
   async updateStream(req, res) {
     const { streamId } = req.params;
     const { title } = req.body;
@@ -204,19 +194,12 @@ class StreamController {
 
       const stream = await updateStream(streamId, updateData);
 
-      res
-        .status(200)
-        .json({ data: stream, message: "Stream updated successfully" });
-
-      res
-        .status(200)
-        .json({ data: stream, message: "Stream updated successfully" });
+      res.status(200).json({ data: stream, message: "Stream updated successfully" });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   }
 
-  // delete a stream
   async deleteStream(req, res) {
     const { streamId } = req.params;
 
@@ -232,7 +215,7 @@ class StreamController {
   async dislikeByUser(req, res) {
     const { streamId, userId } = req.params;
     try {
-      const response = await dislikeByUserService(streamId, userId);
+      await dislikeByUserService(streamId, userId);
       res.status(200).json({ message: "Success" });
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -242,7 +225,7 @@ class StreamController {
   async likeByUser(req, res) {
     const { streamId, userId } = req.params;
     try {
-      const response = await likeByUserService(streamId, userId);
+      await likeByUserService(streamId, userId);
       res.status(200).json({ message: "Success" });
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -261,15 +244,11 @@ class StreamController {
       res.status(500).json({ error: error.message });
     }
   }
+
   async getTop1(req, res) {
     const { type } = req.query;
-    let query;
-    console.log("controller is called, type: ", type);
-    if (type === null) {
-      query === "like";
-    } else {
-      query = type;
-    }
+    let query = type === null ? "like" : type;
+
     try {
       const result = await getTop1(query);
       res.status(200).json(result);
@@ -279,4 +258,4 @@ class StreamController {
   }
 }
 
-module.exports = StreamController;
+export default StreamController;

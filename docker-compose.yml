@@ -1,0 +1,20 @@
+services:
+  rtmp:
+    build: ./rtmp
+    ports:
+      - "1935:1935"
+      - "4001:4001"
+    container_name: rtmp_server
+    volumes:
+      - ./data:/tmp/hls
+      - ./rtmp/nginx.conf:/etc/nginx/nginx.conf
+
+  auth:
+    build: ./
+    container_name: auth_server
+    ports:
+    - "4000:4000"
+    volumes:
+      - ./:/usr/app/
+    env_file:
+      - .env

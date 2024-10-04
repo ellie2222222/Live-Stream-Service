@@ -1,17 +1,14 @@
-const bcrypt = require("bcrypt");
-const validator = require("validator");
-const mongoose = require("mongoose");
-const jwt = require("jsonwebtoken");
-const DatabaseTransaction = require("../repositories/DatabaseTransaction");
-const {
-  uploadToBunny,
-  deleteFromBunny,
-} = require("../middlewares/UploadToBunny");
-const mailer = require("../utils/mailer");
-const { text } = require("express");
+import bcrypt from "bcryptjs";
+import validator from "validator";
+import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
+import DatabaseTransaction from "../repositories/DatabaseTransaction.js";
+import { uploadToBunny, deleteFromBunny } from "../middlewares/UploadToBunny.js";
+import mailer from "../utils/mailer.js";
+import { text } from "express";
 
 // Sign up a new user
-const signup = async (name, email, password, bio, img) => {
+export const signup = async (name, email, password, bio, img) => {
   let avatarUrl = null;
 
   try {
@@ -61,7 +58,7 @@ const signup = async (name, email, password, bio, img) => {
 };
 
 // Log in a user
-const login = async (email, password) => {
+export const login = async (email, password) => {
   try {
     const connection = new DatabaseTransaction();
 
@@ -88,7 +85,7 @@ const login = async (email, password) => {
   }
 };
 
-const sendVerificationEmail = async (email) => {
+export const sendVerificationEmail = async (email) => {
   try {
     const connection = new DatabaseTransaction();
 
@@ -148,7 +145,7 @@ const sendVerificationEmail = async (email) => {
   }
 };
 
-const verifyUserEmail = async (token, res) => {
+export const verifyUserEmail = async (token, res) => {
   const successUrl = "http://localhost:5173/verify/success";
   const failUrl = "http://localhost:5173/verify/fail";
 
@@ -173,7 +170,7 @@ const verifyUserEmail = async (token, res) => {
   }
 };
 
-const findUser = async (userId) => {
+export const findUser = async (userId) => {
   try {
     const connection = new DatabaseTransaction();
 
@@ -189,7 +186,7 @@ const findUser = async (userId) => {
   }
 };
 
-const findAllUsers = async (searchQuery, limit, page) => {
+export const findAllUsers = async (searchQuery, limit, page) => {
   let userResponse;
   try {
     const connection = new DatabaseTransaction();
@@ -229,7 +226,7 @@ const findAllUsers = async (searchQuery, limit, page) => {
   }
 };
 
-const updateUserProfile = async (userId, updateData) => {
+export const updateUserProfile = async (userId, updateData) => {
   try {
     const connection = new DatabaseTransaction();
 
@@ -245,7 +242,7 @@ const updateUserProfile = async (userId, updateData) => {
   }
 };
 
-const deactivateUser = async (userId) => {
+export const deactivateUser = async (userId) => {
   try {
     const connection = new DatabaseTransaction();
 
@@ -260,7 +257,8 @@ const deactivateUser = async (userId) => {
     throw new Error(error.message);
   }
 };
-const changePassword = async (userId, oldPassword, newPassword) => {
+
+export const changePassword = async (userId, oldPassword, newPassword) => {
   try {
     const connection = new DatabaseTransaction();
     const user = await connection.userRepository.findUserById(userId);
@@ -294,7 +292,7 @@ const changePassword = async (userId, oldPassword, newPassword) => {
   }
 };
 
-const generateResetPasswordToken = async (userId) => {
+export const generateResetPasswordToken = async (userId) => {
   try {
     const connection = new DatabaseTransaction();
     const user = await connection.userRepository.findUserById(userId);
@@ -348,7 +346,7 @@ const generateResetPasswordToken = async (userId) => {
   }
 };
 
-const resetPassword = async (token, newPassword) => {
+export const resetPassword = async (token, newPassword) => {
   try {
     const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     const userId = decodedToken.userId;
@@ -372,19 +370,18 @@ const resetPassword = async (token, newPassword) => {
   }
 };
 
-const getTopXLiked = async (x) => {
+export const getTopXLiked = async (x) => {
   const connection = new DatabaseTransaction();
   const limit = x || 10;
   try {
     const topX = await connection.userRepository.getTopUsersByLikes(limit);
-    console.log(topX.length);
     return topX;
   } catch (error) {
     throw new Error(error.message);
   }
 };
-const getUserTotalLike = async (userId) => {
-  console.log("services");
+
+export const getUserTotalLike = async (userId) => {
   const connection = new DatabaseTransaction();
   try {
     const total = await connection.userRepository.getUserTotalLikes(userId);
@@ -394,7 +391,7 @@ const getUserTotalLike = async (userId) => {
   }
 };
 
-const followAStreamerByIdService = async (userId, streamerId) => {
+export const followAStreamerByIdService = async (userId, streamerId) => {
   const connection = new DatabaseTransaction();
   try {
     const result = await connection.userRepository.followAStreamerByIdRepo(
@@ -405,7 +402,7 @@ const followAStreamerByIdService = async (userId, streamerId) => {
   } catch (error) {}
 };
 
-const unfollowAStreamerByIdService = async (userId, streamerId) => {
+export const unfollowAStreamerByIdService = async (userId, streamerId) => {
   const connection = new DatabaseTransaction();
   try {
     const result = await connection.userRepository.unfollowAStreamerByIdRepo(
@@ -416,20 +413,20 @@ const unfollowAStreamerByIdService = async (userId, streamerId) => {
   } catch (error) {}
 };
 
-module.exports = {
-  login,
-  signup,
-  sendVerificationEmail,
-  verifyUserEmail,
-  generateResetPasswordToken,
-  resetPassword,
-  changePassword,
-  findUser,
-  findAllUsers,
-  updateUserProfile,
-  deactivateUser,
-  getTopXLiked,
-  getUserTotalLike,
-  followAStreamerByIdService,
-  unfollowAStreamerByIdService,
-};
+// module.exports = {
+//   login,
+//   signup,
+//   sendVerificationEmail,
+//   verifyUserEmail,
+//   generateResetPasswordToken,
+//   resetPassword,
+//   changePassword,
+//   findUser,
+//   findAllUsers,
+//   updateUserProfile,
+//   deactivateUser,
+//   getTopXLiked,
+//   getUserTotalLike,
+//   followAStreamerByIdService,
+//   unfollowAStreamerByIdService,
+// };
